@@ -1,0 +1,10 @@
+FROM microsoft/aspnetcore-build:2.0.2
+WORKDIR /app
+
+COPY Com.Bateeq.Service.Warehouse.Lib/*.csproj ./Com.Bateeq.Service.Warehouse.Lib/
+COPY Com.Bateeq.Service.Warehouse.WebApi/*.csproj ./Com.Bateeq.Service.Warehouse.WebApi/
+RUN dotnet restore ./Com.Bateeq.Service.Warehouse.WebApi/
+
+COPY Com.Bateeq.Service.Warehouse.Lib/. ./Com.Bateeq.Service.Warehouse.Lib/
+COPY Com.Bateeq.Service.Warehouse.WebApi/. ./Com.Bateeq.Service.Warehouse.WebApi/
+RUN dotnet publish ./Com.Bateeq.Service.Warehouse.WebApi/ --output /out/ --configuration Release

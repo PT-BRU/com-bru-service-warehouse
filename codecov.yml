@@ -1,0 +1,4 @@
+ignore:
+  - "Com.Bateeq.Service.Warehouse.Lib/Migrations" 
+  - "Com.Bateeq.Service.Warehouse.WebApi/Startup.cs"
+  - "Com.Bateeq.Service.Warehouse.WebApi/SchedulerJobs/MasterRegistry.cs"
