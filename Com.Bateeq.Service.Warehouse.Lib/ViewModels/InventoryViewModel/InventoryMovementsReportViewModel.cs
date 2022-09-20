@@ -34,5 +34,6 @@ namespace Com.Bateeq.Service.Warehouse.Lib.ViewModels.InventoryViewModel
         public string StorageCode { get; set; }
         public string StorageName { get; set; }
         //public bool StorageisCentral { get; set; }
+        public string DestinationName { get; set; }
     }
 }
