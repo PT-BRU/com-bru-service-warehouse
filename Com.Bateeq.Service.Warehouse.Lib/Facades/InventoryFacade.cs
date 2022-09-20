@@ -447,10 +447,10 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 Query = Query.OrderBy(string.Concat(Key, " ", OrderType));
             }
 
-            Pageable<InventoryMovementsReportViewModel> pageable = new Pageable<InventoryMovementsReportViewModel>(Query, page - 1, size);
+            //Pageable<InventoryMovementsReportViewModel> pageable = new Pageable<InventoryMovementsReportViewModel>(Query, page - 1, size);
             //List<InventoriesReportViewModel> Data = Query.ToList<InventoriesReportViewModel>();
-            List<InventoryMovementsReportViewModel> Data = pageable.Data.ToList<InventoryMovementsReportViewModel>();
-            int TotalData = pageable.TotalCount;
+            List<InventoryMovementsReportViewModel> Data = Query.ToList<InventoryMovementsReportViewModel>();
+            int TotalData = Query.Count();
 
             //return Tuple.Create(Data, Data.Count());
             return Tuple.Create(Data, TotalData);
@@ -509,21 +509,128 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         #endregion
 
         #region Inventory Movement By Date
-        public IQueryable<InventoryMovementsReportViewModel> GetMovementByDateQuery(string storageId, string itemCode, DateTime firstDay, DateTime lastDay)
+
+        //public IQueryable<InventoryMovementsReportViewModel> GetMovementByDateQuery(string storageId, string itemCode, DateTime firstDay, DateTime lastDay)
+        //{
+        //    var Query = (from c in dbContext.InventoryMovements
+        //                 where c.IsDeleted == false
+        //                 && c.StorageId == Convert.ToInt64((string.IsNullOrWhiteSpace(storageId) ? c.StorageId.ToString() : storageId))
+        //                 && c.ItemCode == (string.IsNullOrWhiteSpace(itemCode) ? c.ItemCode : itemCode)
+        //                 && c.CreatedUtc >= firstDay
+        //                 && c.CreatedUtc <= lastDay
+
+        //                 select new InventoryMovementsReportViewModel
+        //                 {
+        //                     Date = c.Date,
+        //                     ItemCode = c.ItemCode,
+        //                     ItemName = c.ItemName,
+        //                     ItemArticleRealizationOrder = c.ItemArticleRealizationOrder,
+        //                     ItemSize = c.ItemSize,
+        //                     ItemUom = c.ItemUom,
+        //                     ItemDomesticSale = c.ItemDomesticSale,
+        //                     Quantity = c.Type == "OUT" ? -c.Quantity : c.Quantity,
+        //                     Before = c.Before,
+        //                     After = c.After,
+        //                     Type = c.Type,
+        //                     Reference = c.Reference,
+        //                     Remark = c.Remark,
+        //                     StorageId = c.StorageId,
+        //                     StorageCode = c.StorageCode,
+        //                     StorageName = c.StorageName,
+        //                     CreatedUtc = c.CreatedUtc,
+        //                 });
+        //    return Query;
+        //}
+
+        //public Tuple<List<InventoryMovementsReportViewModel>, int> GetMovementsByDate(string storageId, string itemCode, string _month, string _year, string info, string Order, int offset, string username, int page = 1, int size = 25)
+        //{
+        //    var month = Convert.ToInt32(_month);
+        //    var year = Convert.ToInt32(_year);
+
+        //    var firstDay = new DateTime(year, month, 1);
+        //    var lastDay = new DateTime(year, month, DateTime.DaysInMonth(year, month));
+
+        //    var Query = GetMovementByDateQuery(storageId, itemCode, firstDay, lastDay);
+
+        //    Dictionary<string, string> OrderDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Order);
+        //    if (OrderDictionary.Count.Equals(0))
+        //    {
+        //        Query = Query.OrderByDescending(b => b.LastModifiedUtc);
+        //    }
+        //    else
+        //    {
+        //        string Key = OrderDictionary.Keys.First();
+        //        string OrderType = OrderDictionary[Key];
+
+        //        Query = Query.OrderBy(string.Concat(Key, " ", OrderType));
+        //    }
+
+        //    Pageable<InventoryMovementsReportViewModel> pageable = new Pageable<InventoryMovementsReportViewModel>(Query, page - 1, size);
+        //    List<InventoryMovementsReportViewModel> Data = pageable.Data.ToList<InventoryMovementsReportViewModel>();
+        //    int TotalData = pageable.TotalCount;
+
+        //    return Tuple.Create(Data, TotalData);
+        //}
+
+        //public MemoryStream GenerateExcelReportMovementByDate(string storecode, string itemCode, string _month, string _year)
+        //{
+
+        //    var month = Convert.ToInt32(_month);
+        //    var year = Convert.ToInt32(_year);
+
+        //    var firstDay = new DateTime(year, month, 1);
+        //    var lastDay = new DateTime(year, month, DateTime.DaysInMonth(year, month));
+
+        //    var Query = GetMovementByDateQuery(storecode, itemCode, firstDay, lastDay);
+        //    DataTable result = new DataTable();
+
+        //    result.Columns.Add(new DataColumn() { ColumnName = "No", DataType = typeof(String) });
+        //    result.Columns.Add(new DataColumn() { ColumnName = "Kode Toko", DataType = typeof(String) });
+        //    result.Columns.Add(new DataColumn() { ColumnName = "Nama", DataType = typeof(String) });
+        //    result.Columns.Add(new DataColumn() { ColumnName = "Barcode", DataType = typeof(String) });
+        //    result.Columns.Add(new DataColumn() { ColumnName = "Nama Barang", DataType = typeof(String) });
+        //    result.Columns.Add(new DataColumn() { ColumnName = "Tanggal", DataType = typeof(String) });
+        //    result.Columns.Add(new DataColumn() { ColumnName = "Referensi", DataType = typeof(String) });
+        //    result.Columns.Add(new DataColumn() { ColumnName = "Tipe", DataType = typeof(String) });
+        //    result.Columns.Add(new DataColumn() { ColumnName = "Sebelum", DataType = typeof(double) });
+        //    result.Columns.Add(new DataColumn() { ColumnName = "Kuantitas", DataType = typeof(double) });
+        //    result.Columns.Add(new DataColumn() { ColumnName = "Setelah", DataType = typeof(double) });
+        //    result.Columns.Add(new DataColumn() { ColumnName = "Keterangan", DataType = typeof(String) });
+
+        //    if (Query.ToArray().Count() == 0)
+        //        result.Rows.Add("", "", "", "", "", "", "", "", 0, 0, 0, "");
+        //    // to allow column name to be generated properly for empty data as template
+        //    else
+        //    {
+        //        int index = 0;
+        //        foreach (var item in Query)
+        //        {
+        //            index++;
+        //            string date = item.Date == null ? "-" : item.Date.ToOffset(new TimeSpan(7, 0, 0)).ToString("dd MMM yyyy - HH:mm:ss", new CultureInfo("id-ID"));
+        //            result.Rows.Add(index, item.StorageCode, item.StorageName, item.ItemCode, item.ItemName, date,
+        //                item.Reference, item.Type, item.Before, item.Quantity, item.After, item.Remark);
+        //        }
+
+        //    }
+
+        //    return Excel.CreateExcel(new List<KeyValuePair<DataTable, string>>() { new KeyValuePair<DataTable, string>(result, "Territory") }, true);
+        //}
+
+        public IQueryable<InventoryMovementsReportViewModel> GetMovementByDateQuery(DateTime firstDay, DateTime lastDay)
         {
             var Query = (from c in dbContext.InventoryMovements
+                         join d in dbContext.Inventories
+                         on new { c.ItemCode, c.StorageCode } equals new { d.ItemCode, d.StorageCode }
                          where c.IsDeleted == false
-                         && c.StorageId == Convert.ToInt64((string.IsNullOrWhiteSpace(storageId) ? c.StorageId.ToString() : storageId))
-                         && c.ItemCode == (string.IsNullOrWhiteSpace(itemCode) ? c.ItemCode : itemCode)
                          && c.CreatedUtc >= firstDay
                          && c.CreatedUtc <= lastDay
-
+                         orderby c.Date, c.StorageCode, c.ItemCode
                          select new InventoryMovementsReportViewModel
                          {
                              Date = c.Date,
                              ItemCode = c.ItemCode,
                              ItemName = c.ItemName,
-                             ItemArticleRealizationOrder = c.ItemArticleRealizationOrder,
+                             ItemArticleRealizationOrder = d.ItemArticleRealizationOrder,
                              ItemSize = c.ItemSize,
                              ItemUom = c.ItemUom,
                              ItemDomesticSale = c.ItemDomesticSale,
@@ -537,11 +644,13 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                              StorageCode = c.StorageCode,
                              StorageName = c.StorageName,
                              CreatedUtc = c.CreatedUtc,
-                         });
+                             DestinationName = c.Type == "OUT" ? dbContext.TransferOutDocs.Where(a => a.Code == c.Reference).Select(a => a.DestinationName).FirstOrDefault() : dbContext.TransferInDocs.Where(a => a.Code == c.Reference).Select(a => a.SourceName).FirstOrDefault()
+                         }).OrderBy(a=>a.Date.Date).ThenBy(a=>a.StorageCode).ThenBy(a=>a.ItemCode);
+
             return Query;
         }
 
-        public Tuple<List<InventoryMovementsReportViewModel>, int> GetMovementsByDate(string storageId, string itemCode, string _month, string _year, string info, string Order, int offset, string username, int page = 1, int size = 25)
+        public Tuple<List<InventoryMovementsReportViewModel>, int> GetMovementsByDate(string _month, string _year, int page = 1, int size = 25)
         {
             var month = Convert.ToInt32(_month);
             var year = Convert.ToInt32(_year);
@@ -549,20 +658,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             var firstDay = new DateTime(year, month, 1);
             var lastDay = new DateTime(year, month, DateTime.DaysInMonth(year, month));
 
-            var Query = GetMovementByDateQuery(storageId, itemCode, firstDay, lastDay);
-
-            Dictionary<string, string> OrderDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Order);
-            if (OrderDictionary.Count.Equals(0))
-            {
-                Query = Query.OrderByDescending(b => b.LastModifiedUtc);
-            }
-            else
-            {
-                string Key = OrderDictionary.Keys.First();
-                string OrderType = OrderDictionary[Key];
-
-                Query = Query.OrderBy(string.Concat(Key, " ", OrderType));
-            }
+            var Query = GetMovementByDateQuery(firstDay, lastDay);
 
             Pageable<InventoryMovementsReportViewModel> pageable = new Pageable<InventoryMovementsReportViewModel>(Query, page - 1, size);
             List<InventoryMovementsReportViewModel> Data = pageable.Data.ToList<InventoryMovementsReportViewModel>();
@@ -571,7 +667,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             return Tuple.Create(Data, TotalData);
         }
 
-        public MemoryStream GenerateExcelReportMovementByDate(string storecode, string itemCode, string _month, string _year)
+        public MemoryStream GenerateExcelReportMovementByDate(string _month, string _year)
         {
 
             var month = Convert.ToInt32(_month);
@@ -580,40 +676,191 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             var firstDay = new DateTime(year, month, 1);
             var lastDay = new DateTime(year, month, DateTime.DaysInMonth(year, month));
 
-            var Query = GetMovementByDateQuery(storecode, itemCode, firstDay, lastDay);
+            var Query = GetMovementByDateQuery(firstDay, lastDay);
+
             DataTable result = new DataTable();
+            var headers = new string[] { "No", "Tanggal", "Kode Toko", "Nama Toko", "Barcode", "Nama Barang", "RO", "Harga", "Tipe", "Sebelum", "Kuantitas", "Setelah", "Referensi", "Keterangan" };
 
             result.Columns.Add(new DataColumn() { ColumnName = "No", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Tanggal", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Kode Toko", DataType = typeof(String) });
-            result.Columns.Add(new DataColumn() { ColumnName = "Nama", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Nama Toko", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Barcode", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Nama Barang", DataType = typeof(String) });
-            result.Columns.Add(new DataColumn() { ColumnName = "Tanggal", DataType = typeof(String) });
-            result.Columns.Add(new DataColumn() { ColumnName = "Referensi", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "RO", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Harga", DataType = typeof(int) });
             result.Columns.Add(new DataColumn() { ColumnName = "Tipe", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Sebelum", DataType = typeof(double) });
             result.Columns.Add(new DataColumn() { ColumnName = "Kuantitas", DataType = typeof(double) });
             result.Columns.Add(new DataColumn() { ColumnName = "Setelah", DataType = typeof(double) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Referensi", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Keterangan", DataType = typeof(String) });
 
             if (Query.ToArray().Count() == 0)
-                result.Rows.Add("", "", "", "", "", "", "", "", 0, 0, 0, "");
+                result.Rows.Add("", "", "", "", "", "", "", 0, "", 0, 0, 0, "", "");
             // to allow column name to be generated properly for empty data as template
             else
             {
-                int index = 0;
-                foreach (var item in Query)
+
+                var dateSpan = Query.ToArray();
+                var q = Query.ToList();
+                var index = 0;
+
+                foreach(InventoryMovementsReportViewModel temp in q)
                 {
-                    index++;
-                    string date = item.Date == null ? "-" : item.Date.ToOffset(new TimeSpan(7, 0, 0)).ToString("dd MMM yyyy - HH:mm:ss", new CultureInfo("id-ID"));
-                    result.Rows.Add(index, item.StorageCode, item.StorageName, item.ItemCode, item.ItemName, date,
-                        item.Reference, item.Type, item.Before, item.Quantity, item.After, item.Remark);
+                    InventoryMovementsReportViewModel dup = Array.Find(dateSpan, o => o.Date.Date.ToString() == temp.Date.Date.ToString());
+                    if(dup != null)
+                    {
+                        if(dup.count == 0)
+                        {
+                            index++;
+                            dup.count = index;
+                        }
+                    }
+                    temp.count = dup.count;
+                }
+
+                foreach (var item in q)
+                {
+                    result.Rows.Add(item.count, item.Date.Date, item.StorageCode, item.StorageName, item.ItemCode, item.ItemName,
+                        item.ItemArticleRealizationOrder, item.ItemDomesticSale,
+                        item.Type, item.Before, item.Quantity, item.After, item.Reference, item.Remark);
                 }
 
             }
 
-            return Excel.CreateExcel(new List<KeyValuePair<DataTable, string>>() { new KeyValuePair<DataTable, string>(result, "Territory") }, true);
+            ExcelPackage package = new ExcelPackage();
+            bool styling = true;
+
+            foreach (KeyValuePair<DataTable, String> item in new List<KeyValuePair<DataTable, string>>() { new KeyValuePair<DataTable, string>(result, "Territory") })
+            {
+                var sheet = package.Workbook.Worksheets.Add(item.Value);
+
+                Dictionary<string, int> Date = new Dictionary<string, int>();
+                Dictionary<string, int> DateStorage = new Dictionary<string, int>();
+                Dictionary<string, int> DateStorageItem = new Dictionary<string, int>();
+
+                var col = (char)('A' + (result.Columns.Count - 1));
+                string tglawal = firstDay.ToString("dd MMM yyyy", new CultureInfo("id-ID"));
+                string tglakhir = lastDay.ToString("dd MMM yyyy", new CultureInfo("id-ID"));
+
+                sheet.Cells[$"A1:{col}1"].Value = string.Format("LAPORAN MUTASI BARANG PER BULAN");
+                sheet.Cells[$"A1:{col}1"].Merge = true;
+                sheet.Cells[$"A1:{col}1"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                sheet.Cells[$"A1:{col}1"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                sheet.Cells[$"A1:{col}1"].Style.Font.Bold = true;
+
+                sheet.Cells[$"A2:{col}2"].Value = string.Format("Periode {0} - {1}", tglawal, tglakhir);
+                sheet.Cells[$"A2:{col}2"].Merge = true;
+                sheet.Cells[$"A2:{col}2"].Style.Font.Bold = true;
+                sheet.Cells[$"A2:{col}2"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                sheet.Cells[$"A2:{col}2"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+
+                sheet.Cells["A7"].LoadFromDataTable(item.Key, false, (styling == true) ? OfficeOpenXml.Table.TableStyles.Light16 : OfficeOpenXml.Table.TableStyles.None);
+
+                sheet.Cells["A5"].Value = headers[0];
+                sheet.Cells["B5"].Value = headers[1];
+                sheet.Cells["C5"].Value = headers[2];
+                sheet.Cells["D5"].Value = headers[3];
+                sheet.Cells["E5"].Value = headers[4];
+                sheet.Cells["F5"].Value = headers[5];
+                sheet.Cells["G5"].Value = headers[6];
+                sheet.Cells["H5"].Value = headers[7];
+                sheet.Cells["I5"].Value = headers[8];
+                sheet.Cells["J5"].Value = headers[9];
+                sheet.Cells["K5"].Value = headers[10];
+                sheet.Cells["L5"].Value = headers[11];
+                sheet.Cells["M5"].Value = headers[12];
+                sheet.Cells["N5"].Value = headers[13];
+
+                var widths = new int[] { 5, 10, 10, 10, 15, 20, 10, 10, 5, 5, 5, 5, 15, 10 };
+
+                foreach (var i in Enumerable.Range(0, 13))
+                {
+                    sheet.Column(i + 1).Width = widths[i];
+                }
+
+                var data = Query.ToArray();
+                int value;
+
+                foreach(var b in Query)
+                {
+                    if(Date.TryGetValue(b.Date.Date.ToString(), out value))
+                    {
+                        Date[b.Date.Date.ToString()]++;
+                    }
+                    else
+                    {
+                        Date[b.Date.Date.ToString()] = 1;
+                    }
+
+                    if (DateStorage.TryGetValue(b.Date.Date.ToString()+b.StorageCode, out value))
+                    {
+                        DateStorage[b.Date.Date.ToString()+b.StorageCode]++;
+                    }
+                    else
+                    {
+                        DateStorage[b.Date.Date.ToString()+b.StorageCode] = 1;
+                    }
+
+                    if (DateStorageItem.TryGetValue(b.Date.Date.ToString()+b.StorageCode+b.ItemCode, out value))
+                    {
+                        DateStorageItem[b.Date.Date.ToString()+b.StorageCode+b.ItemCode]++;
+                    }
+                    else
+                    {
+                        DateStorageItem[b.Date.Date.ToString() + b.StorageCode + b.ItemCode] = 1;
+                    }
+                }
+
+                int index_1 = 7;
+                int index_2 = 7;
+                int index_3 = 7;
+
+                foreach(KeyValuePair<string, int> b in Date)
+                {
+                    sheet.Cells["A" + index_1 + ":A" + (index_1 + b.Value - 1)].Merge = true;
+                    sheet.Cells["A" + index_1 + ":A" + (index_1 + b.Value - 1)].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+
+                    sheet.Cells["B" + index_1 + ":B" + (index_1 + b.Value - 1)].Merge = true;
+                    sheet.Cells["B" + index_1 + ":B" + (index_1 + b.Value - 1)].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+
+                    index_1 += b.Value;
+                }
+
+                foreach (KeyValuePair<string, int> b in DateStorage)
+                {
+                    sheet.Cells["C" + index_2 + ":C" + (index_2 + b.Value - 1)].Merge = true;
+                    sheet.Cells["C" + index_2 + ":C" + (index_2 + b.Value - 1)].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+
+                    sheet.Cells["D" + index_2 + ":D" + (index_2 + b.Value - 1)].Merge = true;
+                    sheet.Cells["D" + index_2 + ":D" + (index_2 + b.Value - 1)].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+
+                    index_2 += b.Value;
+                }
+
+                foreach (KeyValuePair<string, int> b in DateStorageItem)
+                {
+                    sheet.Cells["E" + index_3 + ":E" + (index_3 + b.Value - 1)].Merge = true;
+                    sheet.Cells["E" + index_3 + ":E" + (index_3 + b.Value - 1)].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+
+                    sheet.Cells["F" + index_3 + ":F" + (index_3 + b.Value - 1)].Merge = true;
+                    sheet.Cells["F" + index_3 + ":F" + (index_3 + b.Value - 1)].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+
+                    sheet.Cells["G" + index_3 + ":G" + (index_3 + b.Value - 1)].Merge = true;
+                    sheet.Cells["G" + index_3 + ":G" + (index_3 + b.Value - 1)].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+
+                    sheet.Cells["H" + index_3 + ":H" + (index_3 + b.Value - 1)].Merge = true;
+                    sheet.Cells["H" + index_3 + ":H" + (index_3 + b.Value - 1)].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                    index_3 += b.Value;
+                }
+            }
+
+            MemoryStream stream = new MemoryStream();
+            package.SaveAs(stream);
+            return stream;
         }
+
         #endregion
 
         #region Stock Availability
