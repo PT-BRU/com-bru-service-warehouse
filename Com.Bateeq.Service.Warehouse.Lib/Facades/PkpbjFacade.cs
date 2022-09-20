@@ -373,7 +373,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             foreach (SPKDocsCsvViewModel productVM in Data)
             {
                 ErrorMessage = "";
-				if (!(productVM.PackingList.Contains("SHM")))
+				if (!(productVM.PackingList.Contains("BTQ")))
 				{
 					ErrorMessage = string.Concat(ErrorMessage, "Format Packing List harus 'xxxx/BTQ-FN/xx/xx, ");
 				}
