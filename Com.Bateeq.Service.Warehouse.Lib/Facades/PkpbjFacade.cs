@@ -375,7 +375,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 ErrorMessage = "";
 				if (!(productVM.PackingList.Contains("SHM")))
 				{
-					ErrorMessage = string.Concat(ErrorMessage, "Format Packing List harus 'xxxx/SHM-FN/xx/xx, ");
+					ErrorMessage = string.Concat(ErrorMessage, "Format Packing List harus 'xxxx/BTQ-FN/xx/xx, ");
 				}
 				if (string.IsNullOrWhiteSpace(productVM.PackingList))
                 {
