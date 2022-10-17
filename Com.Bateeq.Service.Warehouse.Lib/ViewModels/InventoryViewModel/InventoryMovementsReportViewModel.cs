@@ -8,6 +8,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.ViewModels.InventoryViewModel
 {
     public class InventoryMovementsReportViewModel : BaseViewModel
     {
+        public double count { get; set; }
         //public string ItemId { get; set; }
         public string ItemArticleRealizationOrder { get; set; }
         public string ItemCode { get; set; }
@@ -35,5 +36,6 @@ namespace Com.Bateeq.Service.Warehouse.Lib.ViewModels.InventoryViewModel
         public string StorageName { get; set; }
         //public bool StorageisCentral { get; set; }
         public string DestinationName { get; set; }
+        public string SourceName { get; set; }
     }
 }
