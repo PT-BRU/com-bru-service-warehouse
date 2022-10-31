@@ -244,7 +244,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
 
             try
             {
-                var data = facade.GetMovementsByDate(storageId, itemCode, month, year, info, Order, offset, identityService.Username, page, size);
+                var data = facade.GetMovementsByDate( month, year, page, size);
 
                 return Ok(new
                 {
@@ -276,7 +276,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
                 var _year = Convert.ToInt32(year);
                 var date = new DateTime(_year, _month, 1);
 
-                var xls = facade.GenerateExcelReportMovementByDate(storageId, itemCode, month, year);
+                var xls = facade.GenerateExcelReportMovementByDate(month, year);
                 filename = String.Format("Report Movement Stock - {0}.xlsx", date.ToString("MM-yyyy"));
 
                 xlsInBytes = xls.ToArray();
