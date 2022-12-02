@@ -10,6 +10,7 @@ using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -617,39 +618,85 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         //    return Excel.CreateExcel(new List<KeyValuePair<DataTable, string>>() { new KeyValuePair<DataTable, string>(result, "Territory") }, true);
         //}
 
+        //public IQueryable<InventoryMovementsReportViewModel> GetMovementByDateQuery(DateTime firstDay, DateTime lastDay)
+        //{
+        //    var Query = (from c in dbContext.InventoryMovements
+        //                 join d in dbContext.Inventories
+        //                 on new { c.ItemCode, c.StorageCode } equals new { d.ItemCode, d.StorageCode }
+        //                 where c.IsDeleted == false
+        //                 && c.Date.AddHours(7).Date >= firstDay.Date
+        //                 && c.Date.AddHours(7).Date <= lastDay.Date
+        //                 orderby c.Date, c.StorageCode, c.ItemCode
+        //                 select new InventoryMovementsReportViewModel
+        //                 {
+        //                     Date = c.Date,
+        //                     ItemCode = c.ItemCode,
+        //                     ItemName = c.ItemName,
+        //                     ItemArticleRealizationOrder = d.ItemArticleRealizationOrder,
+        //                     ItemSize = c.ItemSize,
+        //                     ItemUom = c.ItemUom,
+        //                     ItemDomesticSale = c.ItemDomesticSale,
+        //                     Quantity = c.Type == "OUT" ? -c.Quantity : c.Quantity,
+        //                     Before = c.Before,
+        //                     After = c.After,
+        //                     Type = c.Type,
+        //                     Reference = c.Reference,
+        //                     Remark = c.Remark,
+        //                     StorageId = c.StorageId,
+        //                     StorageCode = c.StorageCode,
+        //                     StorageName = c.StorageName,
+        //                     CreatedUtc = c.CreatedUtc,
+        //                     SourceName = c.Type == "IN" ? dbContext.TransferInDocs.Where(a => a.Code == c.Reference).Select(a => a.SourceName).FirstOrDefault() : dbContext.TransferOutDocs.Where(a => a.Code == c.Reference).Select(a => a.SourceName).FirstOrDefault(),
+        //                     DestinationName = c.Type == "IN" ? dbContext.TransferInDocs.Where(a => a.Code == c.Reference).Select(a => a.DestinationName).FirstOrDefault() : dbContext.TransferOutDocs.Where(a => a.Code == c.Reference).Select(a => a.DestinationName).FirstOrDefault()
+        //                 }).OrderBy(a => a.Date.Date).ThenBy(a => a.SourceName).ThenBy(a => a.DestinationName).ThenBy(a => a.ItemCode);
+
+        //    return Query;
+        //}
+
         public IQueryable<InventoryMovementsReportViewModel> GetMovementByDateQuery(DateTime firstDay, DateTime lastDay)
         {
-            var Query = (from c in dbContext.InventoryMovements
-                         join d in dbContext.Inventories
-                         on new { c.ItemCode, c.StorageCode } equals new { d.ItemCode, d.StorageCode }
-                         where c.IsDeleted == false
-                         && c.Date.AddHours(7).Date >= firstDay.Date
-                         && c.Date.AddHours(7).Date <= lastDay.Date
-                         orderby c.Date, c.StorageCode, c.ItemCode
-                         select new InventoryMovementsReportViewModel
-                         {
-                             Date = c.Date,
-                             ItemCode = c.ItemCode,
-                             ItemName = c.ItemName,
-                             ItemArticleRealizationOrder = d.ItemArticleRealizationOrder,
-                             ItemSize = c.ItemSize,
-                             ItemUom = c.ItemUom,
-                             ItemDomesticSale = c.ItemDomesticSale,
-                             Quantity = c.Type == "OUT" ? -c.Quantity : c.Quantity,
-                             Before = c.Before,
-                             After = c.After,
-                             Type = c.Type,
-                             Reference = c.Reference,
-                             Remark = c.Remark,
-                             StorageId = c.StorageId,
-                             StorageCode = c.StorageCode,
-                             StorageName = c.StorageName,
-                             CreatedUtc = c.CreatedUtc,
-                             SourceName = c.Type == "IN" ? dbContext.TransferInDocs.Where(a => a.Code == c.Reference).Select(a => a.SourceName).FirstOrDefault() : dbContext.TransferOutDocs.Where(a => a.Code == c.Reference).Select(a => a.SourceName).FirstOrDefault(),
-                             DestinationName = c.Type == "IN" ? dbContext.TransferInDocs.Where(a => a.Code == c.Reference).Select(a => a.DestinationName).FirstOrDefault() : dbContext.TransferOutDocs.Where(a => a.Code == c.Reference).Select(a => a.DestinationName).FirstOrDefault()
-                         }).OrderBy(a => a.Date.Date).ThenBy(a => a.SourceName).ThenBy(a => a.DestinationName).ThenBy(a => a.ItemCode);
-
-            return Query;
+            SqlConnection conn = new SqlConnection("Server=bru-db-server.database.windows.net,1433;Database=bru-db-warehouse;User=bru;password=Standar123.;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true");
+            conn.Open();
+            SqlCommand command = new SqlCommand(
+                "SELECT[After], a.CreatedUtc,[Before], a.[Date],[ItemArticleRealizationOrder],[ItemCode],[ItemDomesticSale],[ItemInternationalSale],[ItemName] " +
+                ",[ItemSize],[ItemUom],[Quantity], a.[Reference], a.[Remark],[StorageCode],[StorageId],[StorageName],[Type]" +
+                ", case when type = 'IN' then(select top 1 SourceName from TransferInDocs where isdeleted = 0) " +
+                "		else (select top 1 SourceName from TransferOutDocs where isdeleted = 0) end as SourceName" +
+                ", case when type = 'IN' then(select top 1 DestinationName from TransferOutDocs where isdeleted = 0)" +
+                "		else (select top 1 DestinationName from TransferOutDocs where isdeleted = 0) end as DestinationName" +
+                " FROM[dbo].[InventoryMovements] a" +
+                " where Month(a.Date) = " + lastDay.Month + " and Year(a.Date)= " + lastDay.Year + " and a.IsDeleted = 0", conn);
+            List<InventoryMovementsReportViewModel> dataList = new List<InventoryMovementsReportViewModel>();
+            using (SqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    InventoryMovementsReportViewModel data = new InventoryMovementsReportViewModel
+                    {
+                        Date = new DateTimeOffset(Convert.ToDateTime(reader["Date"].ToString())),
+                        ItemCode = reader["ItemCode"].ToString(),
+                        ItemName = reader["ItemName"].ToString(),
+                        ItemArticleRealizationOrder = reader["ItemArticleRealizationOrder"].ToString(),
+                        ItemSize = reader["ItemName"].ToString(),
+                        ItemUom = reader["ItemName"].ToString(),
+                        ItemDomesticSale = Convert.ToDouble(reader["ItemDomesticSale"]),
+                        Quantity = reader["Type"].ToString() == "OUT" ? -Convert.ToInt32(reader["Quantity"]) : Convert.ToInt32(reader["Quantity"]),
+                        Before = Convert.ToDouble(reader["Before"]),
+                        After = Convert.ToDouble(reader["After"]),
+                        Type = reader["Type"].ToString(),
+                        Reference = reader["ItemName"].ToString(),
+                        Remark = reader["ItemName"].ToString(),
+                        StorageId = Convert.ToInt32(reader["StorageId"]),
+                        StorageCode = reader["ItemName"].ToString(),
+                        StorageName = reader["ItemName"].ToString(),
+                        CreatedUtc = (Convert.ToDateTime(reader["CreatedUtc"])),
+                        SourceName = reader["SourceName"].ToString(),
+                        DestinationName = reader["DestinationName"].ToString()
+                    };
+                    dataList.Add(data);
+                }
+            }
+            return dataList.AsQueryable().OrderBy(a => a.Date.Date).ThenBy(a => a.SourceName).ThenBy(a => a.DestinationName).ThenBy(a => a.ItemCode);
         }
 
         public Tuple<List<InventoryMovementsReportViewModel>, int> GetMovementsByDate(string _month, string _year, int page = 1, int size = 25)
