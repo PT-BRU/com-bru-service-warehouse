@@ -660,10 +660,10 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             SqlCommand command = new SqlCommand(
                 "SELECT[After], a.CreatedUtc,[Before],  CONVERT(Date, a.Date) Date,[ItemArticleRealizationOrder],[ItemCode],[ItemDomesticSale],[ItemInternationalSale],[ItemName] " +
                 ",[ItemSize],[ItemUom],[Quantity], a.[Reference], a.[Remark],[StorageCode],[StorageId],[StorageName],[Type]" +
-                ", case when type = 'IN' then(select top 1 SourceName from TransferInDocs where isdeleted = 0) " +
-                "		else (select top 1 SourceName from TransferOutDocs where isdeleted = 0) end as SourceName" +
-                ", case when type = 'IN' then(select top 1 DestinationName from TransferOutDocs where isdeleted = 0)" +
-                "		else (select top 1 DestinationName from TransferOutDocs where isdeleted = 0) end as DestinationName" +
+                ", case when type = 'IN' then(select top 1 SourceName from TransferInDocs where isdeleted = 0 and TransferInDocs.code=a.reference) " +
+                "		else (select top 1 SourceName from TransferOutDocs where isdeleted = 0 and TransferOutDocs.code=a.reference) end as SourceName" +
+                ", case when type = 'IN' then(select top 1 DestinationName from TransferInDocs where isdeleted = 0 and TransferInDocs.code=a.reference)" +
+                "		else (select top 1 DestinationName from TransferOutDocs where isdeleted = 0 and TransferOutDocs.code=a.reference) end as DestinationName" +
                 " FROM[dbo].[InventoryMovements] a" +
                 " where Month(a.Date) = " + lastDay.Month + " and Year(a.Date)= " + lastDay.Year + " and a.IsDeleted = 0", conn);
             List<InventoryMovementsMonthlyReportViewModel> dataList = new List<InventoryMovementsMonthlyReportViewModel>();
