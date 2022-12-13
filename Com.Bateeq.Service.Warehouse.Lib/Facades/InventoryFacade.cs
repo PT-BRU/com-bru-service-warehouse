@@ -1010,7 +1010,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         #endregion
 
         #region Monthly Stock
-        public List<MonthlyStockViewModel> GetOverallMonthlyStock (string _year, string _month)
+        public List<MonthlyStockViewModel> GetOverallMonthlyStock(string _year, string _month)
         {
             var month = Convert.ToInt32(_month);
             var year = Convert.ToInt32(_year);
@@ -1022,7 +1022,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             return monthlyStock;
         }
-        
+
         public IEnumerable<MonthlyStockViewModel> GetMonthlyStockQuery(DateTime firstDay, DateTime lastDay)
         {
             var movementStock = (from a in dbContext.InventoryMovements
@@ -1046,12 +1046,12 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             var earlyStock = (from a in movementStock
                               orderby a.CreatedUtc descending
                               where a.CreatedUtc < firstDay
-                              group a by new { a.ItemCode, a.ItemName, a.StorageCode, a.StorageName } into aa
-                               
+                              group a by new { a.ItemCode, a.StorageCode, a.StorageName } into aa
+
                               select new StockPerItemViewModel
                               {
                                   ItemCode = aa.Key.ItemCode,
-                                  ItemName = aa.Key.ItemName,
+                                  ItemName = aa.FirstOrDefault().ItemName,
                                   StorageCode = aa.Key.StorageCode,
                                   StorageName = aa.Key.StorageName,
                                   Quantity = aa.FirstOrDefault().After,
@@ -1061,15 +1061,15 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                               });
 
             var overallEarlyStock = (from b in earlyStock
-                                     group b by new {b.StorageCode, b.StorageName} into bb
+                                     group b by new { b.StorageCode, b.StorageName } into bb
 
                                      select new MonthlyStockViewModel
                                      {
                                          StorageCode = bb.Key.StorageCode,
                                          StorageName = bb.Key.StorageName,
-                                         EarlyQuantity = bb.Sum(x=>x.Quantity),
-                                         EarlyHPP = bb.Sum(x=>x.HPP),
-                                         EarlySale = bb.Sum(x=>x.Sale),
+                                         EarlyQuantity = bb.Sum(x => x.Quantity),
+                                         EarlyHPP = bb.Sum(x => x.HPP),
+                                         EarlySale = bb.Sum(x => x.Sale),
                                          LateQuantity = 0,
                                          LateHPP = 0,
                                          LateSale = 0
@@ -1078,12 +1078,12 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             var lateStock = (from a in movementStock
                              orderby a.CreatedUtc descending
                              where a.CreatedUtc <= lastDay
-                             group a by new { a.ItemCode, a.ItemName, a.StorageCode, a.StorageName } into aa
+                             group a by new { a.ItemCode, a.StorageCode, a.StorageName } into aa
 
                              select new StockPerItemViewModel
                              {
                                  ItemCode = aa.Key.ItemCode,
-                                 ItemName = aa.Key.ItemName,
+                                 ItemName = aa.FirstOrDefault().ItemName,
                                  StorageCode = aa.Key.StorageCode,
                                  StorageName = aa.Key.StorageName,
                                  Quantity = aa.FirstOrDefault().After,
@@ -1101,26 +1101,26 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                                         EarlyQuantity = 0,
                                         EarlyHPP = 0,
                                         EarlySale = 0,
-                                        LateQuantity = bb.Sum(x=>x.Quantity),
-                                        LateHPP = bb.Sum(x=>x.HPP),
-                                        LateSale = bb.Sum(x=>x.Sale)
+                                        LateQuantity = bb.Sum(x => x.Quantity),
+                                        LateHPP = bb.Sum(x => x.HPP),
+                                        LateSale = bb.Sum(x => x.Sale)
                                     });
 
             var overallMonthlyStock = overallEarlyStock.Union(overallLateStock).ToList();
 
             var data = (from query in overallMonthlyStock
-                        group query by new { query.StorageCode, query.StorageName} into groupdata
+                        group query by new { query.StorageCode, query.StorageName } into groupdata
 
                         select new MonthlyStockViewModel
                         {
                             StorageCode = groupdata.Key.StorageCode,
                             StorageName = groupdata.Key.StorageName,
-                            EarlyQuantity = groupdata.Sum(x=>x.EarlyQuantity),
-                            EarlyHPP = groupdata.Sum(x=>x.EarlyHPP),
-                            EarlySale = groupdata.Sum(x=>x.EarlySale),
-                            LateQuantity = groupdata.Sum(x=>x.LateQuantity),
-                            LateHPP = groupdata.Sum(x=>x.LateHPP),
-                            LateSale = groupdata.Sum(x=>x.LateSale)
+                            EarlyQuantity = groupdata.Sum(x => x.EarlyQuantity),
+                            EarlyHPP = groupdata.Sum(x => x.EarlyHPP),
+                            EarlySale = groupdata.Sum(x => x.EarlySale),
+                            LateQuantity = groupdata.Sum(x => x.LateQuantity),
+                            LateHPP = groupdata.Sum(x => x.LateHPP),
+                            LateSale = groupdata.Sum(x => x.LateSale)
                         });
 
             return data.AsQueryable();
@@ -1156,6 +1156,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                                    HPP = (aa.FirstOrDefault().ItemDomesticCOGS > 0 ? aa.FirstOrDefault().ItemDomesticCOGS : aa.FirstOrDefault().ItemInternationalCOGS) * aa.FirstOrDefault().After,
                                    Sale = (aa.FirstOrDefault().ItemDomesticSale > 0 ? aa.FirstOrDefault().ItemDomesticSale : aa.FirstOrDefault().ItemInternationalSale) * aa.FirstOrDefault().After
                                });
+
             var _LatestStock = (from b in LatestStock
                                 where b.Quantity > 0
                                 select b);
@@ -1163,7 +1164,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             return _LatestStock.AsQueryable();
         }
 
-        public MemoryStream GenerateExcelForLatestStockByStorage (string code, string _month, string _year)
+        public MemoryStream GenerateExcelForLatestStockByStorage(string code, string _month, string _year)
         {
             var month = Convert.ToInt32(_month);
             var year = Convert.ToInt32(_year);
