@@ -74,13 +74,13 @@ namespace Com.Bateeq.Service.Warehouse.Lib.PDFTemplates
             PdfPCell cellInternNoteHeaderLeft = new PdfPCell() { Border = Rectangle.NO_BORDER, HorizontalAlignment = Element.ALIGN_LEFT };
             PdfPCell cellInternNoteHeaderRight = new PdfPCell() { Border = Rectangle.NO_BORDER, HorizontalAlignment = Element.ALIGN_LEFT };
 
-            cellInternNoteHeaderLeft.Phrase = new Phrase("PT. TABOR ANDALAN RETAILINDO", bold_font1);
+            cellInternNoteHeaderLeft.Phrase = new Phrase("PT. BATEEQ RETAILINDO UTAMA", bold_font1);
             tableInternNoteHeader.AddCell(cellInternNoteHeaderLeft);
 
             cellInternNoteHeaderLeft.Phrase = new Phrase("No. Bon" + "       : " + viewModel.code, normal_font);
             tableInternNoteHeader.AddCell(cellInternNoteHeaderLeft);
 
-            cellInternNoteHeaderRight.Phrase = new Phrase("EQUITY TOWER 15C JL JEND SUDIRMAN KAV. 52-53\nSENAYAN KEBAYORAN BARU\nJAKARTA SELATAN DKI JAKARTA\nNO NPWP : 71.157.388.1-451.000", normal_font);
+            cellInternNoteHeaderRight.Phrase = new Phrase("Jln Merapi No. 23 RT. 000 RW. 000 Banaran, Grogol\nKab. Sukoharjo Jawa Tengah\nTlp. (0271) 719911\nNO NPWP : 41.229.882.0-532.000", normal_font);
             tableInternNoteHeader.AddCell(cellInternNoteHeaderRight);
 
             //cellInternNoteHeaderLeft.Phrase = new Phrase("Password" + "                 : " + viewModel.password, normal_font);
