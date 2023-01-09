@@ -1,7 +1,9 @@
 ﻿using Com.Bateeq.Service.Warehouse.Lib.Helpers;
+using Com.Bateeq.Service.Warehouse.Lib.Interfaces;
 using Com.Bateeq.Service.Warehouse.Lib.Models.InventoryModel;
 using Com.Bateeq.Service.Warehouse.Lib.Models.SPKDocsModel;
 using Com.Bateeq.Service.Warehouse.Lib.Models.TransferModel;
+using Com.Bateeq.Service.Warehouse.Lib.ViewModels.NewIntegrationViewModel;
 using Com.Moonlay.Models;
 using Com.Moonlay.NetCore.Lib;
 using HashidsNet;
@@ -61,24 +63,158 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades.Stores
             return Tuple.Create(Data, TotalData, OrderDictionary);
         }
 
-		public Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadPendingStore(string destinationName,int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
+        //private List<StoreViewModel> ReadStores()
+        //{
+        //    string authUri = "me";
+        //    List<StoreViewModel> viewModel = new List<StoreViewModel>();
+
+        //    IHttpClientService httpClient = (IHttpClientService)this.serviceProvider.GetService(typeof(IHttpClientService));
+        //    if (httpClient != null)
+        //    {
+        //        var response = httpClient.GetAsync($"{APIEndpoint.Auth}{authUri}").Result.Content.ReadAsStringAsync();
+        //        Dictionary<string, object> result = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Result);
+        //        Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.GetValueOrDefault("data").ToString());
+        //        viewModel = JsonConvert.DeserializeObject<List<StoreViewModel>>(data.GetValueOrDefault("stores").ToString());
+        //    }
+
+        //    return viewModel;
+        //}
+
+        //public Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadPendingStore(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
+        //{
+        //    List<StoreViewModel> store = ReadStores();
+        //    List<string> destName = new List<string>();
+
+        //    foreach (var i in store)
+        //    {
+        //        destName.Add(i.Code);
+        //    }
+
+        //    IQueryable<SPKDocs> Query = this.dbSetSpk.Include(m => m.Items).Where(i => i.IsDistributed == true && i.IsReceived == false && destName.Contains(i.DestinationCode) && i.DestinationCode != "GDG.01");
+
+
+        //    List<string> searchAttributes = new List<string>()
+        //    {
+        //        "Code","DestinationName","SourceName","Reference","PackingList"
+        //    };
+
+        //    foreach (var i in Query)
+        //    {
+        //        if (/*i.Reference != null || i.Reference != ""*/ !String.IsNullOrWhiteSpace(i.Reference) && i.Reference.Contains("RTT"))
+        //        {
+        //            var transferout = dbContext.TransferOutDocs.Where(x => x.Code == i.Reference).FirstOrDefault();
+        //            if (transferout != null)
+        //            {
+        //                i.SourceId = transferout.SourceId;
+        //                i.SourceCode = transferout.SourceCode;
+        //                i.SourceName = transferout.SourceName;
+        //                i.DestinationId = transferout.DestinationId;
+        //                i.DestinationName = transferout.DestinationName;
+        //                i.DestinationCode = transferout.DestinationCode;
+        //            }
+        //            else
+        //            {
+        //                i.SourceId = 0;
+        //                i.SourceCode = "-";
+        //                i.SourceName = "-";
+        //                i.DestinationId = 0;
+        //                i.DestinationName = "-";
+        //                i.DestinationCode = "-";
+        //            }
+        //        }
+        //    }
+
+        //    Query = QueryHelper<SPKDocs>.ConfigureSearch(Query, searchAttributes, Keyword);
+
+        //    Dictionary<string, string> FilterDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Filter);
+        //    Query = QueryHelper<SPKDocs>.ConfigureFilter(Query, FilterDictionary);
+
+        //    Dictionary<string, string> OrderDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Order);
+        //    Query = QueryHelper<SPKDocs>.ConfigureOrder(Query, OrderDictionary);
+
+        //    Pageable<SPKDocs> pageable = new Pageable<SPKDocs>(Query, Page - 1, Size);
+        //    List<SPKDocs> Data = pageable.Data.ToList();
+        //    int TotalData = pageable.TotalCount;
+
+        //    return Tuple.Create(Data, TotalData, OrderDictionary);
+        //}
+
+
+        //public Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadPendingStore(string destinationName, int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
+        //{
+        //    String[] strlist = destinationName.Split(";");
+
+        //    List<string> destName = new List<string>();
+        //    foreach (String s in strlist)
+        //    {
+        //        destName.Add(s);
+        //    }
+        //    IQueryable<SPKDocs> Query = this.dbSetSpk.Include(m => m.Items).Where(i => i.IsDistributed == true && i.IsReceived == false && destName.Contains(i.DestinationCode) && i.DestinationCode != "GDG.01");
+
+
+        //    List<string> searchAttributes = new List<string>()
+        //         {
+        //             "Code","DestinationName","SourceName","Reference","PackingList"
+        //         };
+
+        //    foreach (var i in Query)
+        //    {
+        //        if (/*i.Reference != null || i.Reference != ""*/ !String.IsNullOrWhiteSpace(i.Reference) && i.Reference.Contains("RTT"))
+        //        {
+        //            var transferout = dbContext.TransferOutDocs.Where(x => x.Code == i.Reference).FirstOrDefault();
+        //            if (transferout != null)
+        //            {
+        //                i.SourceId = transferout.SourceId;
+        //                i.SourceCode = transferout.SourceCode;
+        //                i.SourceName = transferout.SourceName;
+        //                i.DestinationId = transferout.DestinationId;
+        //                i.DestinationName = transferout.DestinationName;
+        //                i.DestinationCode = transferout.DestinationCode;
+        //            }
+        //            else
+        //            {
+        //                i.SourceId = 0;
+        //                i.SourceCode = "-";
+        //                i.SourceName = "-";
+        //                i.DestinationId = 0;
+        //                i.DestinationName = "-";
+        //                i.DestinationCode = "-";
+        //            }
+        //        }
+        //    }
+
+        //    Query = QueryHelper<SPKDocs>.ConfigureSearch(Query, searchAttributes, Keyword);
+
+        //    Dictionary<string, string> FilterDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Filter);
+        //    Query = QueryHelper<SPKDocs>.ConfigureFilter(Query, FilterDictionary);
+
+        //    Dictionary<string, string> OrderDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Order);
+        //    Query = QueryHelper<SPKDocs>.ConfigureOrder(Query, OrderDictionary);
+
+        //    Pageable<SPKDocs> pageable = new Pageable<SPKDocs>(Query, Page - 1, Size);
+        //    List<SPKDocs> Data = pageable.Data.ToList();
+        //    int TotalData = pageable.TotalCount;
+
+        //    return Tuple.Create(Data, TotalData, OrderDictionary);
+        //}
+
+        public Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadPendingStore(string destinationName, int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
         {
-			String[] strlist = destinationName.Split(";");
+            //String[] strlist = destinationName.Split(";");
 
-			List<string> destName = new List<string>();
-			foreach (String s in strlist)
-			{
-				destName.Add(s);
-			}
-			IQueryable<SPKDocs> Query = this.dbSetSpk.Include(m => m.Items).Where(i=>i.IsDistributed == true && i.IsReceived == false && destName.Contains(i.DestinationCode) && i.DestinationCode != "GDG.01" );
+            //List<string> destName = new List<string>();
+            //foreach (String s in strlist)
+            //{
+            //    destName.Add(s);
+            //}
+            IQueryable<SPKDocs> Query = this.dbSetSpk.Include(m => m.Items).Where(i => i.IsDistributed == true && i.IsReceived == false && i.DestinationCode == destinationName && i.DestinationCode != "GDG.01");
 
+            List<string> searchAttributes = new List<string>()
+                 {
+                     "Code","DestinationName","SourceName","Reference","PackingList"
+                 };
 
-			List<string> searchAttributes = new List<string>()
-            {
-                "Code","DestinationName","SourceName","Reference","PackingList"
-            };
-
-            foreach(var i in Query)
+            foreach (var i in Query)
             {
                 if (/*i.Reference != null || i.Reference != ""*/ !String.IsNullOrWhiteSpace(i.Reference) && i.Reference.Contains("RTT"))
                 {
@@ -119,7 +255,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades.Stores
             return Tuple.Create(Data, TotalData, OrderDictionary);
         }
 
-		public Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadPending(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
+        public Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadPending(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
 		{
 			IQueryable<SPKDocs> Query = this.dbSetSpk.Include(m => m.Items).Where(i => i.IsDistributed == true && i.IsReceived == false);
 
