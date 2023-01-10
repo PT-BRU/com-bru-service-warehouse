@@ -113,26 +113,16 @@ namespace Com.Bateeq.Service.Warehouse.WebApi.Controllers.v1.Stores.TransferIn
                 return StatusCode(General.INTERNAL_ERROR_STATUS_CODE, Result);
             }
         }
-
-        //[HttpGet("pendingStore")]
-        //public IActionResult GetPendingStore([FromBody] string destinationName, int page = 1, int size = 25, string order = "{}", string keyword = null, string filter = "{}")
-        //{
-        //[HttpGet("pendingStore")]
-        //public IActionResult GetPendingStore(int page = 1, int size = 25, string order = "{}", string keyword = null, string filter = "{}")
-        //{
-        [HttpGet("pendingStore")]
-        public IActionResult GetPendingStore(string destinationName, int page = 1, int size = 25, string order = "{}", string keyword = null, string filter = "{}")
-        {
-            try
+		[HttpGet("pendingStore")]
+		public IActionResult GetPendingStore(string destinationName,int page = 1, int size = 25, string order = "{}", string keyword = null, string filter = "{}")
+		{
+			try
 			{
 				identityService.Username = User.Claims.Single(p => p.Type.Equals("username")).Value;
-                identityService.Token = identityService.Token = Request.Headers["Authorization"].FirstOrDefault().Replace("Bearer ", "");
 
-                var Data = facade.ReadPendingStore(destinationName, page, size, order, keyword, filter);
+				var Data = facade.ReadPendingStore(destinationName,page, size, order, keyword, filter);
 
-                //var Data = facade.ReadPendingStore(page, size, order, keyword, filter);
-
-                var viewModel = mapper.Map<List<SPKDocsViewModel>>(Data.Item1);
+				var viewModel = mapper.Map<List<SPKDocsViewModel>>(Data.Item1);
 
 				List<object> listData = new List<object>();
 				listData.AddRange(
