@@ -80,8 +80,10 @@ namespace Com.Bateeq.Service.Warehouse.WebApi.Controllers.v1.Stores.TransferStoc
             try
             {
                 identityService.Username = User.Claims.Single(p => p.Type.Equals("username")).Value;
+                identityService.Token = Request.Headers["Authorization"].FirstOrDefault().Replace("Bearer ", "");
 
-                var Data = facade.ReadModel(page, size, order, keyword, filter);
+
+                var Data = facade.ReadModel(identityService.Token, page, size, order, keyword, filter);
 
                 //var viewModel = mapper.Map<List<TransferStockViewModel>>(Data.Item1);
 
