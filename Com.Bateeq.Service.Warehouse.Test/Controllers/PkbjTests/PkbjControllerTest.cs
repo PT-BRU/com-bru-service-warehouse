@@ -591,5 +591,45 @@ namespace Com.Bateeq.Service.Warehouse.Test.Controllers.PkbjTests
             var response = controller.GetPackingRTT();
             Assert.Equal((int)HttpStatusCode.InternalServerError, GetStatusCode(response));
         }
+
+        [Fact]
+        public void Should_Success_Get_PackingRTP_Data()
+        {
+            var validateMock = new Mock<IValidateService>();
+            validateMock.Setup(s => s.Validate(It.IsAny<SPKDocsViewModel>())).Verifiable();
+
+            var mockFacade = new Mock<IPkpbjFacade>();
+
+            mockFacade.Setup(x => x.Read(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), null, It.IsAny<string>()))
+                .Returns(Tuple.Create(new List<SPKDocs>(), 0, new Dictionary<string, string>()));
+
+            var mockMapper = new Mock<IMapper>();
+            mockMapper.Setup(x => x.Map<List<SPKDocsViewModel>>(It.IsAny<List<SPKDocs>>()))
+                .Returns(new List<SPKDocsViewModel> { SpkViewModel });
+
+            PkpbjByUserController controller = GetController(mockFacade, validateMock, mockMapper);
+            var response = controller.GetPackingRTP();
+            Assert.Equal((int)HttpStatusCode.OK, GetStatusCode(response));
+        }
+
+        [Fact]
+        public void Should_Error_Get_PackingRTP_Data()
+        {
+            var validateMock = new Mock<IValidateService>();
+            validateMock.Setup(s => s.Validate(It.IsAny<SPKDocsViewModel>())).Verifiable();
+
+            var mockFacade = new Mock<IPkpbjFacade>();
+
+            mockFacade.Setup(x => x.Read(It.IsAny<int>(), It.IsAny<int>(), "{", null, It.IsAny<string>()))
+                .Returns(Tuple.Create(new List<SPKDocs>(), 0, new Dictionary<string, string>()));
+
+            var mockMapper = new Mock<IMapper>();
+            mockMapper.Setup(x => x.Map<List<SPKDocsViewModel>>(It.IsAny<List<SPKDocs>>()))
+                .Returns(new List<SPKDocsViewModel> { SpkViewModel });
+
+            PkpbjByUserController controller = GetController(mockFacade, validateMock, mockMapper);
+            var response = controller.GetPackingRTP();
+            Assert.Equal((int)HttpStatusCode.InternalServerError, GetStatusCode(response));
+        }
     }
 }
