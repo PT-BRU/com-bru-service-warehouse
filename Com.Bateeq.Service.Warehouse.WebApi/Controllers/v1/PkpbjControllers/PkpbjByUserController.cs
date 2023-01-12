@@ -497,7 +497,7 @@ namespace Com.Bateeq.Service.Warehouse.WebApi.Controllers.v1.PkpbjControllers
 
             try
             {
-                var Data = facade.Read(page, size, order, keyword, filter);
+                var Data = facade.ReadPackingRTP(page, size, order, keyword, filter);
 
                 var newData = mapper.Map<List<SPKDocsViewModel>>(Data.Item1);
 
