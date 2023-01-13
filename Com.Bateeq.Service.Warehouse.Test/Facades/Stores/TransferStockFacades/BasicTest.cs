@@ -152,7 +152,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.Facades.Stores.TransferStockFacades
 			var model = await dataUtil(facade, GetCurrentMethod()).GetNewData();
 			var viewmodel = dataUtil(facade, GetCurrentMethod()).MapToViewModel(model);
 			await returnToCenterFacade.Create(viewmodel, model, USERNAME);
-			var Response = returnToCenterFacade.ReadModel((int)model.Id);
+			var Response = returnToCenterFacade.ReadModel(model.Id.ToString());
 			Assert.NotNull(Response);
 		}
 

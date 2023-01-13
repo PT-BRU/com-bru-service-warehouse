@@ -1,6 +1,7 @@
 ﻿using Com.Bateeq.Service.Warehouse.Lib.Models.TransferModel;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,5 +14,6 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Interfaces.TransferInterfaces
         TransferInDoc ReadById(int id);
         Task<int> Create(TransferInDoc model, string username, int clientTimeZoneOffset = 7);
         Task<int> CreateForPos(TransferInDoc model, string username, int clientTimeZoneOffset = 7);
+        MemoryStream GenerateExcel(int id);
     }
 }

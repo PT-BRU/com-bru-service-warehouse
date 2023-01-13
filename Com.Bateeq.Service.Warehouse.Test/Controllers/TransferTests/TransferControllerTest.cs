@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Com.Bateeq.Service.Warehouse.Lib;
+using Com.Bateeq.Service.Warehouse.Lib.Facades;
 using Com.Bateeq.Service.Warehouse.Lib.Interfaces;
 using Com.Bateeq.Service.Warehouse.Lib.Interfaces.TransferInterfaces;
 using Com.Bateeq.Service.Warehouse.Lib.Models.TransferModel;
@@ -9,11 +11,17 @@ using Com.Bateeq.Service.Warehouse.WebApi.Controllers.v1.Transfer;
 using Com.Moonlay.NetCore.Lib.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,7 +43,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.Controllers.TransferTests
                         code = "code",
                         name = "name",
                         _id = 1,
-                        
+
                     },
                     reference = "reference",
                     items = new List<TransferInDocItemViewModel>
@@ -276,7 +284,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.Controllers.TransferTests
             mockMapper.Setup(x => x.Map<TransferInDocViewModel>(It.IsAny<TransferInDoc>()))
                 .Returns(ViewModel);
 
-            TransferController controller = new TransferController(GetServiceProvider().Object,mockMapper.Object, mockFacade.Object );
+            TransferController controller = new TransferController(GetServiceProvider().Object, mockMapper.Object, mockFacade.Object);
             var response = controller.Get(It.IsAny<int>());
             Assert.Equal((int)HttpStatusCode.OK, GetStatusCode(response));
         }
@@ -295,5 +303,106 @@ namespace Com.Bateeq.Service.Warehouse.Test.Controllers.TransferTests
             var response = controller.Get(It.IsAny<int>());
             Assert.Equal((int)HttpStatusCode.InternalServerError, GetStatusCode(response));
         }
+
+        [Fact]
+        public void Should_error_Get_Data_GetXls()
+        {
+            var mockFacade = new Mock<ITransferInDoc>();
+
+            mockFacade.Setup(x => x.ReadById(It.IsAny<int>()))
+                .Returns(new TransferInDoc());
+
+            var mockMapper = new Mock<IMapper>();
+            mockMapper.Setup(x => x.Map<TransferInDocViewModel>(It.IsAny<TransferInDoc>()))
+                .Returns(ViewModel);
+
+            TransferController controller = new TransferController(GetServiceProvider().Object, mockMapper.Object, mockFacade.Object);
+            var response = controller.GetXls(It.IsAny<int>());
+            Assert.Equal((int)HttpStatusCode.InternalServerError, GetStatusCode(response));
+        }
+        private WarehouseDbContext _dbContext(string testName)
+        {
+            var serviceProvider = new ServiceCollection()
+              .AddEntityFrameworkInMemoryDatabase()
+              .BuildServiceProvider();
+
+            DbContextOptionsBuilder<WarehouseDbContext> optionsBuilder = new DbContextOptionsBuilder<WarehouseDbContext>();
+            optionsBuilder
+                .UseInMemoryDatabase(testName)
+                .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+                .UseInternalServiceProvider(serviceProvider);
+
+            WarehouseDbContext dbContext = new WarehouseDbContext(optionsBuilder.Options);
+
+            return dbContext;
+        }
+        protected string GetCurrentAsyncMethod([CallerMemberName] string methodName = "")
+        {
+            var method = new StackTrace()
+                .GetFrames()
+                .Select(frame => frame.GetMethod())
+                .FirstOrDefault(item => item.Name == methodName);
+
+            return method.Name;
+
+        }
+        public TransferInDoc GetTestData(WarehouseDbContext dbContext)
+        {
+            TransferInDoc data = new TransferInDoc();
+            data.Reference = "ref";
+            data.CreatedBy = "unittestusername";
+            data.Id = 1;
+            data.SourceCode = "GDG.01";
+            data.DestinationCode = "code";
+            data.SourceName = "GDG.01";
+            data.DestinationName = "code";
+            
+            return data;
+        }
+        protected TransferController GetController(IdentityService identityService, IMapper mapper, TransferFacade service)
+        {
+            var user = new Mock<ClaimsPrincipal>();
+            var claims = new Claim[]
+            {
+                new Claim("username", "unittestusername")
+            };
+            user.Setup(u => u.Claims).Returns(claims);
+
+            TransferController controller = new TransferController(GetServiceProvider().Object,mapper,service);
+            controller.ControllerContext = new ControllerContext()
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    User = user.Object
+                }
+            };
+            controller.ControllerContext.HttpContext.Request.Headers["Authorization"] = "Bearer unittesttoken";
+            controller.ControllerContext.HttpContext.Request.Path = new PathString("/v1/unit-test");
+            return controller;
+        }
+
+        [Fact]
+        public void Should_Success_Get_Data_GetXls()
+        {
+            //Setup
+            WarehouseDbContext dbContext = _dbContext(GetCurrentAsyncMethod());
+            Mock<IServiceProvider> serviceProvider = GetServiceProvider();
+            Mock<IMapper> imapper = new Mock<IMapper>();
+
+            TransferFacade service = new TransferFacade(serviceProvider.Object, dbContext);
+
+            serviceProvider.Setup(s => s.GetService(typeof(SPKDocsFacade))).Returns(service);
+            serviceProvider.Setup(s => s.GetService(typeof(WarehouseDbContext))).Returns(dbContext);
+            var identityService = new IdentityService();
+
+            TransferInDoc testData = GetTestData(dbContext);
+
+            //Act
+            IActionResult response = GetController(identityService, imapper.Object, service).GetXls(It.IsAny<int>());
+
+            //Assert
+            Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", response.GetType().GetProperty("ContentType").GetValue(response, null));
+        }
+
     }
 }
