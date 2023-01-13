@@ -700,9 +700,8 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades.Stores
 
             Query = QueryHelper<TransferStockViewModel>.ConfigureSearch(Query, searchAttributes, Keyword);
 
-
             Dictionary<string, string> OrderDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Order);
-            //Query = QueryHelper<TransferOutDoc>.ConfigureOrder(Query, OrderDictionary);
+            Query = QueryHelper<TransferStockViewModel>.ConfigureOrder(Query, OrderDictionary);
 
             Pageable<TransferStockViewModel> pageable = new Pageable<TransferStockViewModel>(Query, Page - 1, Size);
             List<TransferStockViewModel> Data = pageable.Data.ToList();
