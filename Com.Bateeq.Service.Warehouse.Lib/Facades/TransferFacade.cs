@@ -14,6 +14,8 @@ using Com.Moonlay.Models;
 using Com.Bateeq.Service.Warehouse.Lib.Models.InventoryModel;
 using HashidsNet;
 using MongoDB.Bson;
+using System.Data;
+using System.IO;
 
 namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 {
@@ -484,7 +486,50 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         //    return Created;
         //}
 
+        public MemoryStream GenerateExcel(int id)
+        {
+            var Query = from a in dbContext.TransferInDocs
+                        join b in dbContext.TransferInDocItems on a.Id equals b.TransferDocsId
+                        where a.Id == id
+                        select new
+                        {
+                            a.Code,
+                            a.SourceCode,
+                            a.SourceName,
+                            a.DestinationCode,
+                            a.DestinationName,
+                            b.ItemCode,
+                            b.ItemName,
+                            b.Quantity,
+                            b.DomesticCOGS,
+                            b.Remark
+                        };
+            DataTable result = new DataTable();
 
+            //result.Columns.Add(new DataColumn());
+            result.Columns.Add(new DataColumn() { ColumnName = "No Referensi", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Dari", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Ke", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Barcode", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Nama", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Kuantitas Penerimaan", DataType = typeof(Double) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Harga", DataType = typeof(Double) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Catatan", DataType = typeof(String) });
+
+            if (Query.Count() == 0)
+                result.Rows.Add("", "", "", "", "", 0, 0, "");
+            else
+            {
+                foreach (var item in Query)
+                {
+
+                    result.Rows.Add(item.Code, item.SourceCode + "-"+ item.SourceName, item.DestinationCode +"-"+ item.DestinationName, item.ItemCode, item.ItemName, item.Quantity, item.DomesticCOGS, item.Remark);
+                }
+            }
+
+            return Excel.CreateExcel(new List<KeyValuePair<DataTable, string>> { (new KeyValuePair<DataTable, string>(result, "Retur")) }, true);
+
+        }
 
     }
 }

@@ -305,5 +305,15 @@ namespace Com.Bateeq.Service.Warehouse.Test.Facades.TransferInFacades
             var Response = facade.ReadById((int)model.Id);
             Assert.NotNull(Response);
         }
+        [Fact]
+        public async Task SuccesGetXls()
+        {
+            TransferFacade facade = new TransferFacade(GetServiceProvider().Object, _dbContext(GetCurrentMethod()));
+            var model = await dataUtil(facade, GetCurrentMethod()).GetTestData();
+            //Act
+            var response = facade.GenerateExcel((int)model.Id);
+            //Assert
+            Assert.NotNull(response);
+        }
     }
 }
