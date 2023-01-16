@@ -248,32 +248,6 @@ namespace Com.Bateeq.Service.Warehouse.WebApi.Controllers.v1.Transfer
                 return StatusCode(General.INTERNAL_ERROR_STATUS_CODE, Result);
             }
         }
-        [HttpGet("{id}/exportall")]
-        public IActionResult GetXls(int id)
-        {
-            //Console.WriteLine("sampai sini");
-            try
-            {
-                byte[] xlsInBytes;
-                int offset = Convert.ToInt32(Request.Headers["x-timezone-offset"]);
-                string accept = Request.Headers["Accept"];
-
-                var xls = facade.GenerateExcel(id);
-                string filename = String.Format("Report - {0}.xlsx", DateTime.UtcNow.ToString("ddMMyyyy"));
-
-                xlsInBytes = xls.ToArray();
-                var file = File(xlsInBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);
-                return file;
-
-            }
-            catch (Exception e)
-            {
-                Dictionary<string, object> Result =
-                    new ResultFormatter(ApiVersion, General.INTERNAL_ERROR_STATUS_CODE, e.Message)
-                   .Fail();
-                return StatusCode(General.INTERNAL_ERROR_STATUS_CODE, Result);
-            }
-
-        }
+       
     }
 }

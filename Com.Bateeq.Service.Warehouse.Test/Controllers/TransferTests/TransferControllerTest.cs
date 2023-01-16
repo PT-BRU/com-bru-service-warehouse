@@ -304,22 +304,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.Controllers.TransferTests
             Assert.Equal((int)HttpStatusCode.InternalServerError, GetStatusCode(response));
         }
 
-        [Fact]
-        public void Should_error_Get_Data_GetXls()
-        {
-            var mockFacade = new Mock<ITransferInDoc>();
-
-            mockFacade.Setup(x => x.ReadById(It.IsAny<int>()))
-                .Returns(new TransferInDoc());
-
-            var mockMapper = new Mock<IMapper>();
-            mockMapper.Setup(x => x.Map<TransferInDocViewModel>(It.IsAny<TransferInDoc>()))
-                .Returns(ViewModel);
-
-            TransferController controller = new TransferController(GetServiceProvider().Object, mockMapper.Object, mockFacade.Object);
-            var response = controller.GetXls(It.IsAny<int>());
-            Assert.Equal((int)HttpStatusCode.InternalServerError, GetStatusCode(response));
-        }
+        
         private WarehouseDbContext _dbContext(string testName)
         {
             var serviceProvider = new ServiceCollection()
@@ -356,7 +341,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.Controllers.TransferTests
             data.DestinationCode = "code";
             data.SourceName = "GDG.01";
             data.DestinationName = "code";
-            
+
             return data;
         }
         protected TransferController GetController(IdentityService identityService, IMapper mapper, TransferFacade service)
@@ -368,7 +353,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.Controllers.TransferTests
             };
             user.Setup(u => u.Claims).Returns(claims);
 
-            TransferController controller = new TransferController(GetServiceProvider().Object,mapper,service);
+            TransferController controller = new TransferController(GetServiceProvider().Object, mapper, service);
             controller.ControllerContext = new ControllerContext()
             {
                 HttpContext = new DefaultHttpContext()
@@ -380,29 +365,5 @@ namespace Com.Bateeq.Service.Warehouse.Test.Controllers.TransferTests
             controller.ControllerContext.HttpContext.Request.Path = new PathString("/v1/unit-test");
             return controller;
         }
-
-        [Fact]
-        public void Should_Success_Get_Data_GetXls()
-        {
-            //Setup
-            WarehouseDbContext dbContext = _dbContext(GetCurrentAsyncMethod());
-            Mock<IServiceProvider> serviceProvider = GetServiceProvider();
-            Mock<IMapper> imapper = new Mock<IMapper>();
-
-            TransferFacade service = new TransferFacade(serviceProvider.Object, dbContext);
-
-            serviceProvider.Setup(s => s.GetService(typeof(SPKDocsFacade))).Returns(service);
-            serviceProvider.Setup(s => s.GetService(typeof(WarehouseDbContext))).Returns(dbContext);
-            var identityService = new IdentityService();
-
-            TransferInDoc testData = GetTestData(dbContext);
-
-            //Act
-            IActionResult response = GetController(identityService, imapper.Object, service).GetXls(It.IsAny<int>());
-
-            //Assert
-            Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", response.GetType().GetProperty("ContentType").GetValue(response, null));
-        }
-
     }
 }

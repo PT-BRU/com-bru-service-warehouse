@@ -3,6 +3,7 @@ using Com.Bateeq.Service.Warehouse.Lib.ViewModels.SpkDocsViewModel;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +26,6 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Interfaces.PkbjInterfaces
         Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadPackingRTT(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}");
         Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadPackingRTP(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}");
         Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadPackingList(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}");
-
+        MemoryStream GenerateExcel(int id);
     }
 }

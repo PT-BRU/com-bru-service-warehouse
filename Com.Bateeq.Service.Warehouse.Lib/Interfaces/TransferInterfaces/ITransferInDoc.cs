@@ -14,6 +14,5 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Interfaces.TransferInterfaces
         TransferInDoc ReadById(int id);
         Task<int> Create(TransferInDoc model, string username, int clientTimeZoneOffset = 7);
         Task<int> CreateForPos(TransferInDoc model, string username, int clientTimeZoneOffset = 7);
-        MemoryStream GenerateExcel(int id);
     }
 }
