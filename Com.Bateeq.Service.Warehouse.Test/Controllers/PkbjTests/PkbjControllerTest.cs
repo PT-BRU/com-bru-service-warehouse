@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Com.Bateeq.Service.Warehouse.Lib;
 using Com.Bateeq.Service.Warehouse.Lib.Facades;
 using Com.Bateeq.Service.Warehouse.Lib.Interfaces;
 using Com.Bateeq.Service.Warehouse.Lib.Interfaces.PkbjInterfaces;
+using Com.Bateeq.Service.Warehouse.Lib.Interfaces.SPKInterfaces;
 using Com.Bateeq.Service.Warehouse.Lib.Models.SPKDocsModel;
 using Com.Bateeq.Service.Warehouse.Lib.Services;
 using Com.Bateeq.Service.Warehouse.Lib.ViewModels.PkbjByUserViewModel;
@@ -629,6 +631,32 @@ namespace Com.Bateeq.Service.Warehouse.Test.Controllers.PkbjTests
 
             PkpbjByUserController controller = GetController(mockFacade, validateMock, mockMapper);
             var response = controller.GetPackingRTP();
+            Assert.Equal((int)HttpStatusCode.InternalServerError, GetStatusCode(response));
+        }
+
+        [Fact]
+        public async Task SuccesGetXls()
+        {
+          
+            var validateMock = new Mock<IValidateService>();
+            validateMock.Setup(s => s.Validate(It.IsAny<SPKDocsViewModel>())).Verifiable();
+
+            var mockFacade = new Mock<IPkpbjFacade>();
+
+            mockFacade.Setup(x => x.ReadById(It.IsAny<int>()))
+                .Returns(new SPKDocs());
+
+            var mockMapper = new Mock<IMapper>();
+            mockMapper.Setup(x => x.Map<List<SPKDocsViewModel>>(It.IsAny<List<SPKDocs>>()))
+                .Returns(new List<SPKDocsViewModel> { SpkViewModel });
+
+            PkpbjByUserController controller = GetController(mockFacade, validateMock, mockMapper);
+
+
+            //Act
+            IActionResult response = controller.GetXls(It.IsAny<int>());
+
+            //Assert
             Assert.Equal((int)HttpStatusCode.InternalServerError, GetStatusCode(response));
         }
     }

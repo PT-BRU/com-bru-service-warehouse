@@ -305,15 +305,26 @@ namespace Com.Bateeq.Service.Warehouse.Test.Facades.TransferInFacades
             var Response = facade.ReadById((int)model.Id);
             Assert.NotNull(Response);
         }
+        private SPKDocDataUtil dataUtilSPK(Com.Bateeq.Service.Warehouse.Lib.Facades.PkpbjFacade facade, string testName)
+        {
+            var pkbbjfacade = new Com.Bateeq.Service.Warehouse.Lib.Facades.PkpbjFacade(ServiceProvider, _dbContext(testName));
+            //var sPKDocDataUtil = new SPKDocDataUtil(pkbbjfacade);
+            //var transferFacade = new TransferFacade(ServiceProvider, _dbContext(testName));
+            //var transferDataUtil = new TransferDataUtil(transferFacade, sPKDocDataUtil);
+
+            return new SPKDocDataUtil(facade);
+        }
+
         [Fact]
         public async Task SuccesGetXls()
         {
-            TransferFacade facade = new TransferFacade(GetServiceProvider().Object, _dbContext(GetCurrentMethod()));
-            var model = await dataUtil(facade, GetCurrentMethod()).GetTestData();
+            PkpbjFacade facade = new PkpbjFacade(GetServiceProvider().Object, _dbContext(GetCurrentMethod()));
+            var model = await dataUtilSPK(facade, GetCurrentMethod()).GetTestData();
             //Act
             var response = facade.GenerateExcel((int)model.Id);
             //Assert
             Assert.NotNull(response);
         }
+
     }
 }

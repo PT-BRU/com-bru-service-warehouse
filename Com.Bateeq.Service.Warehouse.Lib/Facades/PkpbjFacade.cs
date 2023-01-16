@@ -22,6 +22,8 @@ using Com.Bateeq.Service.Warehouse.Lib.Models.TransferModel;
 using Com.Bateeq.Service.Warehouse.Lib.Interfaces.PkbjInterfaces;
 using Com.Bateeq.Service.Warehouse.Lib.Serializers;
 using Microsoft.Extensions.Primitives;
+using System.IO;
+using System.Data;
 
 namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 {
@@ -710,6 +712,49 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             {
                 return null;
             }
+        }
+
+        public MemoryStream GenerateExcel(int id)
+        {
+            var Query = from a in dbContext.SPKDocs
+                        join b in dbContext.SPKDocsItems on a.Id equals b.SPKDocsId
+                        where a.Id == id
+                        select new
+                        {
+                            a.Code,
+                            a.SourceCode,
+                            a.SourceName,
+                            a.DestinationCode,
+                            a.DestinationName,
+                            b.ItemCode,
+                            b.ItemName,
+                            b.Quantity,
+                            b.Remark
+                        };
+            DataTable result = new DataTable();
+
+            //result.Columns.Add(new DataColumn());
+            result.Columns.Add(new DataColumn() { ColumnName = "No Referensi", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Dari", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Ke", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Barcode", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Nama", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Kuantitas Penerimaan", DataType = typeof(Double) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Catatan", DataType = typeof(String) });
+
+            if (Query.Count() == 0)
+                result.Rows.Add("", "", "", "", "", 0,  "");
+            else
+            {
+                foreach (var item in Query)
+                {
+
+                    result.Rows.Add(item.Code, item.SourceCode + "-" + item.SourceName, item.DestinationCode + "-" + item.DestinationName, item.ItemCode, item.ItemName, item.Quantity, item.Remark);
+                }
+            }
+
+            return Excel.CreateExcel(new List<KeyValuePair<DataTable, string>> { (new KeyValuePair<DataTable, string>(result, "Pemasukan Gudang Pusat")) }, true);
+
         }
     }
 }
