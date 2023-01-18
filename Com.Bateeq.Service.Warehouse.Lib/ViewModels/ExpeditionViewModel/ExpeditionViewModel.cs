@@ -14,7 +14,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.ViewModels.ExpeditionViewModel
         public DateTimeOffset date { get; set; }
         public ExpeditionServiceViewModel expeditionService { get; set; }
         public string remark { get; set; }
-        public int weight { get; set; }
+        public double weight { get; set; }
         public List<ExpeditionItemViewModel> items { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
