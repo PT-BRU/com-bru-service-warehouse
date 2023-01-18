@@ -32,7 +32,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Models.Expeditions
         [MaxLength(255)]
         public string SourceName { get; set; }
         public int SPKDocsId { get; set; }
-        public int Weight { get; set; }
+        public double Weight { get; set; }
         public virtual ICollection<ExpeditionDetail> Details { get; set; }
         public virtual long ExpeditionId { get; set; }
         [ForeignKey("ExpeditionId")]
