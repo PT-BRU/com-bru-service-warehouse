@@ -217,7 +217,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             {
                 try
                 {
-                    int totalweight = 0;
+                    double totalweight = 0;
                     string code = GenerateCode("BTQ-KB/EXP");
                     
                     model.Code = code;
