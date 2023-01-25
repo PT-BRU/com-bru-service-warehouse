@@ -59,7 +59,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             List<string> searchAttributes = new List<string>()
             {
-                "Code"
+                "Code","CreatedBy"
             };
 
             Query = QueryHelper<Expedition>.ConfigureSearch(Query, searchAttributes, Keyword);
@@ -93,7 +93,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
              
             List<string> searchAttributes = new List<string>()
             {
-                "Code"
+                "Code","CreatedBy"
             };
 
             Query = QueryHelper<Expedition>.ConfigureSearch(Query, searchAttributes, Keyword);
