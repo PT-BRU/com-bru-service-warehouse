@@ -1026,8 +1026,9 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         public IEnumerable<MonthlyStockViewModel> GetMonthlyStockQuery(DateTime firstDay, DateTime lastDay)
         {
             var movementStock = (from a in dbContext.InventoryMovements
-                                 where a.CreatedUtc <= lastDay
-                                 && a.IsDeleted == false
+                                     // where a.CreatedUtc <= lastDay
+                                 where a.CreatedUtc.Date <= lastDay.Date
+                                && a.IsDeleted == false
                                  select new
                                  {
                                      ItemCode = a.ItemCode,
@@ -1045,8 +1046,8 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             var earlyStock = (from a in movementStock
                               orderby a.CreatedUtc descending
-                              where a.CreatedUtc < firstDay
-                              group a by new { a.ItemCode, a.StorageCode, a.StorageName } into aa
+                               where a.CreatedUtc < firstDay
+                               group a by new { a.ItemCode, a.StorageCode, a.StorageName } into aa
 
                               select new StockPerItemViewModel
                               {
@@ -1077,7 +1078,8 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             var lateStock = (from a in movementStock
                              orderby a.CreatedUtc descending
-                             where a.CreatedUtc <= lastDay
+                             //where a.CreatedUtc <= lastDay
+                             where a.CreatedUtc.Date <= lastDay.Date
                              group a by new { a.ItemCode, a.StorageCode, a.StorageName } into aa
 
                              select new StockPerItemViewModel
@@ -1142,7 +1144,8 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         {
             var LatestStock = (from a in dbContext.InventoryMovements
                                orderby a.CreatedUtc descending
-                               where a.CreatedUtc <= date
+                               //where a.CreatedUtc <= date
+                               where a.CreatedUtc.Date <= date.Date 
                                && a.StorageCode == code
                                group a by new { a.ItemCode } into aa
 
