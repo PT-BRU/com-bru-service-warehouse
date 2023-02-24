@@ -188,7 +188,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
                 return Ok(new
                 {
                     apiVersion = ApiVersion,
-                    data = data.Item1,
+                    data = data.Item1.OrderBy(s=>s.CreatedUtc),
                     info = new { total = data.Item2 },
                     message = General.OK_MESSAGE,
                     statusCode = General.OK_STATUS_CODE
