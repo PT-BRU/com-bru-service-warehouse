@@ -169,7 +169,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             Dictionary<string, string> OrderDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Order);
             if (OrderDictionary.Count.Equals(0))
             {
-                Query = Query.OrderByDescending(b => b.LastModifiedUtc);
+                Query = Query.OrderBy(b => b.LastModifiedUtc);
             }
             else
             {
