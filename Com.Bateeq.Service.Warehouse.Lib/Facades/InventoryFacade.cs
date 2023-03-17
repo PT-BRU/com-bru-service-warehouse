@@ -1160,11 +1160,11 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                                    Sale = (aa.FirstOrDefault().ItemDomesticSale > 0 ? aa.FirstOrDefault().ItemDomesticSale : aa.FirstOrDefault().ItemInternationalSale) * aa.FirstOrDefault().After
                                });
 
-            var _LatestStock = (from b in LatestStock
-                                where b.Quantity > 0
-                                select b);
+            //var _LatestStock = (from b in LatestStock
+            //                    where b.Quantity > 0
+            //                    select b);
 
-            return _LatestStock.AsQueryable();
+            return LatestStock.AsQueryable();
         }
 
         public MemoryStream GenerateExcelForLatestStockByStorage(string code, string _month, string _year)
