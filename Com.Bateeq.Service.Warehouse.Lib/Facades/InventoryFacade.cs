@@ -1046,7 +1046,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             var earlyStock = (from a in movementStock
                               orderby a.CreatedUtc descending
-                               where a.CreatedUtc < firstDay
+                               where a.CreatedUtc.Date < firstDay.Date
                                group a by new { a.ItemCode, a.StorageCode, a.StorageName } into aa
 
                               select new StockPerItemViewModel
