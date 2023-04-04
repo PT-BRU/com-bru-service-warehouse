@@ -2,7 +2,9 @@
 using Com.Bateeq.Service.Warehouse.Lib.Helpers;
 using Com.Bateeq.Service.Warehouse.Lib.Models.Expeditions;
 using Com.Bateeq.Service.Warehouse.Lib.Models.InventoryModel;
+using Com.Bateeq.Service.Warehouse.Lib.Models.SPKDocsModel;
 using Com.Bateeq.Service.Warehouse.Lib.Models.TransferModel;
+using Com.Bateeq.Service.Warehouse.Lib.Utilities;
 using Com.DanLiris.Service.Warehouse.Lib.ViewModels.ExpeditionViewModel;
 using Com.Moonlay.Models;
 using Com.Moonlay.NetCore.Lib;
@@ -29,6 +31,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         private readonly WarehouseDbContext dbContext;
         private readonly DbSet<Expedition> dbSet;
         private readonly DbSet<Inventory> dbSetInventory;
+        private readonly DbSet<SPKDocs> dbSetSpk;
         private readonly DbSet<InventoryMovement> dbSetInventoryMovement;
         private readonly DbSet<TransferOutDoc> dbSetTransfer;
         private readonly IServiceProvider serviceProvider;
@@ -43,6 +46,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             this.dbSetInventory = dbContext.Set<Inventory>();
             this.dbSetInventoryMovement = dbContext.Set<InventoryMovement>();
             this.dbSetTransfer = dbContext.Set<TransferOutDoc>();
+            this.dbSetSpk = dbContext.Set<SPKDocs>();
 
             mapper = serviceProvider == null ? null : (IMapper)serviceProvider.GetService(typeof(IMapper));
         }
@@ -55,7 +59,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             List<string> searchAttributes = new List<string>()
             {
-                "Code"
+                "Code","CreatedBy"
             };
 
             Query = QueryHelper<Expedition>.ConfigureSearch(Query, searchAttributes, Keyword);
@@ -73,6 +77,39 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             return Tuple.Create(Data, TotalData, OrderDictionary);
         }
 
+        public Tuple<List<Expedition>, int, Dictionary<string, string>> ReadExpeditionByStore(string token, int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
+        {
+            var permissions = TokenDecrypter.GetPermission(token);
+            IQueryable<SPKDocs> QuerySPK = this.dbSetSpk.Include(m => m.Items).Where(i => i.IsDistributed == true && i.IsReceived == false && permissions.Contains(i.SourceCode)  );
+
+            List<long> idSpK = new List<long>();
+            foreach(var id in QuerySPK)
+            {
+                idSpK.Add(id.Id);
+            }
+            IQueryable<Expedition> Query = dbSet
+                .Include(m => m.Items)
+                    .ThenInclude(i => i.Details).Where(h => h.Items.Any(i => idSpK.Contains(i.SPKDocsId)));
+             
+            List<string> searchAttributes = new List<string>()
+            {
+                "Code","CreatedBy"
+            };
+
+            Query = QueryHelper<Expedition>.ConfigureSearch(Query, searchAttributes, Keyword);
+
+            Dictionary<string, string> FilterDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Filter);
+            Query = QueryHelper<Expedition>.ConfigureFilter(Query, FilterDictionary);
+
+            Dictionary<string, string> OrderDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Order);
+            Query = QueryHelper<Expedition>.ConfigureOrder(Query, OrderDictionary);
+
+            Pageable<Expedition> pageable = new Pageable<Expedition>(Query, Page - 1, Size);
+            List<Expedition> Data = pageable.Data.ToList();
+            int TotalData = pageable.TotalCount;
+
+            return Tuple.Create(Data, TotalData, OrderDictionary);
+        }
         public IQueryable<ExpeditionReportViewModel> GetReportQuery(DateTime? dateFrom, DateTime? dateTo, string destinationCode, bool status, int transaction, string packingList, int offset, string username)
         {
             DateTime DateFrom = dateFrom == null ? new DateTime(1970, 1, 1) : (DateTime)dateFrom;

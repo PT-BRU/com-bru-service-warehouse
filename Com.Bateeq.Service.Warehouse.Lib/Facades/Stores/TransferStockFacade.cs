@@ -5,6 +5,7 @@ using Com.Bateeq.Service.Warehouse.Lib.Models.Expeditions;
 using Com.Bateeq.Service.Warehouse.Lib.Models.InventoryModel;
 using Com.Bateeq.Service.Warehouse.Lib.Models.SPKDocsModel;
 using Com.Bateeq.Service.Warehouse.Lib.Models.TransferModel;
+using Com.Bateeq.Service.Warehouse.Lib.Utilities;
 using Com.Bateeq.Service.Warehouse.Lib.ViewModels.NewIntegrationViewModel;
 using Com.Bateeq.Service.Warehouse.Lib.ViewModels.TransferViewModels;
 using Com.DanLiris.Service.Warehouse.Lib.ViewModels.TransferViewModel;
@@ -668,11 +669,14 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades.Stores
             return Tuple.Create(Data, TotalData, OrderDictionary);
         }
 
-        public Tuple<List<TransferStockViewModel>, int, Dictionary<string, string>> ReadModel(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
+        public Tuple<List<TransferStockViewModel>, int, Dictionary<string, string>> ReadModel(string token, int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
         {
+
+            var stores = TokenDecrypter.GetStore(token);
             var Query =  from a in dbContext.TransferOutDocs
                          join b in dbContext.SPKDocs on a.Code equals b.Reference
                          where a.Code.Contains("BTQ-KB/RTT") && b.DestinationName != "GUDANG TRANSFER STOCK"
+                         && stores.Contains(a.SourceCode)
                          orderby a.Date descending
                          select new TransferStockViewModel
                          {
@@ -696,9 +700,8 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades.Stores
 
             Query = QueryHelper<TransferStockViewModel>.ConfigureSearch(Query, searchAttributes, Keyword);
 
-
             Dictionary<string, string> OrderDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Order);
-            //Query = QueryHelper<TransferOutDoc>.ConfigureOrder(Query, OrderDictionary);
+            Query = QueryHelper<TransferStockViewModel>.ConfigureOrder(Query, OrderDictionary);
 
             Pageable<TransferStockViewModel> pageable = new Pageable<TransferStockViewModel>(Query, Page - 1, Size);
             List<TransferStockViewModel> Data = pageable.Data.ToList();
