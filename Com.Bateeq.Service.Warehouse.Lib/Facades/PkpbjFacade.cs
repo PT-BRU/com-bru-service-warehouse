@@ -22,6 +22,8 @@ using Com.Bateeq.Service.Warehouse.Lib.Models.TransferModel;
 using Com.Bateeq.Service.Warehouse.Lib.Interfaces.PkbjInterfaces;
 using Com.Bateeq.Service.Warehouse.Lib.Serializers;
 using Microsoft.Extensions.Primitives;
+using System.IO;
+using System.Data;
 
 namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 {
@@ -122,6 +124,30 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             return Tuple.Create(Data, TotalData, OrderDictionary);
         }
 
+        public Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadPackingRTP(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
+        {
+            IQueryable<SPKDocs> Query = this.dbSet.Include(x => x.Items).Where(x => x.IsReceived == false && (x.PackingList.Contains("BTQ-FN") || x.Reference.Contains("BTQ-KB/RTP") ||( (x.Reference == null) && (x.DestinationName.Contains("GUDANG") && (x.SourceName.Contains("GUDANG"))))));
+
+            List<string> searchAttributes = new List<string>()
+            {
+                "PackingList", "SourceName", "DestinationName", "Reference"
+            };
+
+            Query = QueryHelper<SPKDocs>.ConfigureSearch(Query, searchAttributes, Keyword);
+
+            Dictionary<string, string> FilterDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Filter);
+            Query = QueryHelper<SPKDocs>.ConfigureFilter(Query, FilterDictionary);
+
+            Dictionary<string, string> OrderDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Order);
+            Query = QueryHelper<SPKDocs>.ConfigureOrder(Query, OrderDictionary);
+
+            Pageable<SPKDocs> pageable = new Pageable<SPKDocs>(Query, Page - 1, Size);
+            List<SPKDocs> Data = pageable.Data.ToList<SPKDocs>();
+            int TotalData = pageable.TotalCount;
+
+            return Tuple.Create(Data, TotalData, OrderDictionary);
+        }
+
         public Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadForUpload(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
         {
             IQueryable<SPKDocs> Query = this.dbSet.Include(x => x.Items).Where(x => x.PackingList.Contains("BTQ-FN"));
@@ -145,6 +171,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             return Tuple.Create(Data, TotalData, OrderDictionary);
         }
+
 		public Tuple<List<SPKDocsViewModel>, int, Dictionary<string, string>> ReadForUploadNew(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
 		{
 			IQueryable<SPKDocs> Query = this.dbSet.Include(x => x.Items).Where(x => x.PackingList.Contains("BTQ-FN"));
@@ -195,6 +222,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
 			return Tuple.Create(Data, TotalData, OrderDictionary);
 		}
+
 		public Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadExpedition(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
         {
             IQueryable<SPKDocs> Query = this.dbSet.Include(x=>x.Items).Where(x => x.IsDistributed == false);
@@ -684,6 +712,49 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             {
                 return null;
             }
+        }
+
+        public MemoryStream GenerateExcel(int id)
+        {
+            var Query = from a in dbContext.SPKDocs
+                        join b in dbContext.SPKDocsItems on a.Id equals b.SPKDocsId
+                        where a.Id == id
+                        select new
+                        {
+                            a.Code,
+                            a.SourceCode,
+                            a.SourceName,
+                            a.DestinationCode,
+                            a.DestinationName,
+                            b.ItemCode,
+                            b.ItemName,
+                            b.Quantity,
+                            b.Remark
+                        };
+            DataTable result = new DataTable();
+
+            //result.Columns.Add(new DataColumn());
+            result.Columns.Add(new DataColumn() { ColumnName = "No Referensi", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Dari", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Ke", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Barcode", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Nama", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Kuantitas Penerimaan", DataType = typeof(Double) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Catatan", DataType = typeof(String) });
+
+            if (Query.Count() == 0)
+                result.Rows.Add("", "", "", "", "", 0,  "");
+            else
+            {
+                foreach (var item in Query)
+                {
+
+                    result.Rows.Add(item.Code, item.SourceCode + "-" + item.SourceName, item.DestinationCode + "-" + item.DestinationName, item.ItemCode, item.ItemName, item.Quantity, item.Remark);
+                }
+            }
+
+            return Excel.CreateExcel(new List<KeyValuePair<DataTable, string>> { (new KeyValuePair<DataTable, string>(result, "Pemasukan Gudang Pusat")) }, true);
+
         }
     }
 }

@@ -14,6 +14,8 @@ using Com.Moonlay.Models;
 using Com.Bateeq.Service.Warehouse.Lib.Models.InventoryModel;
 using HashidsNet;
 using MongoDB.Bson;
+using System.Data;
+using System.IO;
 
 namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 {
@@ -324,6 +326,30 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             return Created;
         }
 
+        public Tuple<List<TransferInDoc>, int, Dictionary<string, string>> ReadWarehouseReceived(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
+        {
+            IQueryable<TransferInDoc> Query = this.dbSet.Include(m => m.Items).OrderByDescending(x => x.Date).Where(x=> (x.Reference.Contains("BTQ-FN") || x.Reference.Contains("BTQ-KB/PLR")) && !x.DestinationCode.Contains("GDG.05"));
+
+            List<string> searchAttributes = new List<string>()
+            {
+                "Code","DestinationName","SourceName","Reference"
+            };
+
+            Query = QueryHelper<TransferInDoc>.ConfigureSearch(Query, searchAttributes, Keyword);
+
+            Dictionary<string, string> FilterDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Filter);
+            Query = QueryHelper<TransferInDoc>.ConfigureFilter(Query, FilterDictionary);
+
+            Dictionary<string, string> OrderDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Order);
+            Query = QueryHelper<TransferInDoc>.ConfigureOrder(Query, OrderDictionary);
+
+            Pageable<TransferInDoc> pageable = new Pageable<TransferInDoc>(Query, Page - 1, Size);
+            List<TransferInDoc> Data = pageable.Data.ToList();
+            int TotalData = pageable.TotalCount;
+
+            return Tuple.Create(Data, TotalData, OrderDictionary);
+        }
+
         //public async Task<int> Create(SPKDocsViewModel model, string username, int clientTimeZoneOffset = 7)
         //{
         //    int Created = 0;
@@ -460,7 +486,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         //    return Created;
         //}
 
-
+     
 
     }
 }

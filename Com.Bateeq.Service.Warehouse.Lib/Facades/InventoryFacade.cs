@@ -169,7 +169,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             Dictionary<string, string> OrderDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Order);
             if (OrderDictionary.Count.Equals(0))
             {
-                Query = Query.OrderByDescending(b => b.LastModifiedUtc);
+                Query = Query.OrderBy(b => b.LastModifiedUtc);
             }
             else
             {
@@ -439,7 +439,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             Dictionary<string, string> OrderDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(Order);
             if (OrderDictionary.Count.Equals(0))
             {
-                Query = Query.OrderByDescending(b => b.LastModifiedUtc);
+                Query = Query.OrderBy(b => b.LastModifiedUtc);
             }
             else
             {
@@ -1026,8 +1026,9 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         public IEnumerable<MonthlyStockViewModel> GetMonthlyStockQuery(DateTime firstDay, DateTime lastDay)
         {
             var movementStock = (from a in dbContext.InventoryMovements
-                                 where a.CreatedUtc <= lastDay
-                                 && a.IsDeleted == false
+                                     // where a.CreatedUtc <= lastDay
+                                 where a.CreatedUtc.Date <= lastDay.Date
+                                && a.IsDeleted == false
                                  select new
                                  {
                                      ItemCode = a.ItemCode,
@@ -1045,8 +1046,8 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             var earlyStock = (from a in movementStock
                               orderby a.CreatedUtc descending
-                              where a.CreatedUtc < firstDay
-                              group a by new { a.ItemCode, a.StorageCode, a.StorageName } into aa
+                               where a.CreatedUtc.Date < firstDay.Date
+                               group a by new { a.ItemCode, a.StorageCode, a.StorageName } into aa
 
                               select new StockPerItemViewModel
                               {
@@ -1077,7 +1078,8 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             var lateStock = (from a in movementStock
                              orderby a.CreatedUtc descending
-                             where a.CreatedUtc <= lastDay
+                             //where a.CreatedUtc <= lastDay
+                             where a.CreatedUtc.Date <= lastDay.Date
                              group a by new { a.ItemCode, a.StorageCode, a.StorageName } into aa
 
                              select new StockPerItemViewModel
@@ -1142,7 +1144,8 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         {
             var LatestStock = (from a in dbContext.InventoryMovements
                                orderby a.CreatedUtc descending
-                               where a.CreatedUtc <= date
+                               //where a.CreatedUtc <= date
+                               where a.CreatedUtc.Date <= date.Date 
                                && a.StorageCode == code
                                group a by new { a.ItemCode } into aa
 
@@ -1157,11 +1160,11 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                                    Sale = (aa.FirstOrDefault().ItemDomesticSale > 0 ? aa.FirstOrDefault().ItemDomesticSale : aa.FirstOrDefault().ItemInternationalSale) * aa.FirstOrDefault().After
                                });
 
-            var _LatestStock = (from b in LatestStock
-                                where b.Quantity > 0
-                                select b);
+            //var _LatestStock = (from b in LatestStock
+            //                    where b.Quantity > 0
+            //                    select b);
 
-            return _LatestStock.AsQueryable();
+            return LatestStock.AsQueryable();
         }
 
         public MemoryStream GenerateExcelForLatestStockByStorage(string code, string _month, string _year)
