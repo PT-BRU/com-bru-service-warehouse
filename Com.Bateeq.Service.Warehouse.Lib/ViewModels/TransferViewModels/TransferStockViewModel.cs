@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Com.Bateeq.Service.Warehouse.Lib.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Com.Bateeq.Service.Warehouse.Lib.ViewModels.TransferViewModels
 {
-    public class TransferStockViewModel
+    public class TransferStockViewModel : BaseViewModel
     {
         public int id { get; set; }
         public string code { get; set; }
