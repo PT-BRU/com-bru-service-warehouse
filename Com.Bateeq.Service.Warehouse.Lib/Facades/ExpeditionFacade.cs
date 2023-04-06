@@ -266,6 +266,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                         totalweight += i.Weight;
                         string CodeTransferOut = GenerateCode("BTQ-KB/EXP");
                         var SPK = dbContext.SPKDocs.Where(x => x.PackingList == i.PackingList).Single();
+                        i.SPKDocsId = Convert.ToInt32(SPK.Id);
                         SPK.IsDistributed = true;
                         transferOutDoc.Code = CodeTransferOut;
                         transferOutDoc.Reference = model.Code;
@@ -281,7 +282,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                         {
                             d.Id = 0;
                             var inven = dbContext.Inventories.Where(x => x.ItemArticleRealizationOrder == d.ArticleRealizationOrder && x.ItemCode == d.ItemCode && x.ItemName == d.ItemName && x.StorageId == i.SourceId).Single();
-
+                            d.SPKDocsId = Convert.ToInt32( SPK.Id);
                             InventoryMovement movement = new InventoryMovement
                             {
                                 After = inven.Quantity - d.SendQuantity,
