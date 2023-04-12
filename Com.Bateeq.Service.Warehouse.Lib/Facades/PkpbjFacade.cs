@@ -126,7 +126,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
         public Tuple<List<SPKDocs>, int, Dictionary<string, string>> ReadPackingRTP(int Page = 1, int Size = 25, string Order = "{}", string Keyword = null, string Filter = "{}")
         {
-            IQueryable<SPKDocs> Query = this.dbSet.Include(x => x.Items).Where(x => x.IsReceived == false && (x.PackingList.Contains("BTQ-FN") || x.Reference.Contains("BTQ-KB/RTP") ||( (x.Reference == null) && (x.DestinationName.Contains("GUDANG") && (x.SourceName.Contains("GUDANG"))))));
+            IQueryable<SPKDocs> Query = this.dbSet.Include(x => x.Items).Where(x => x.IsReceived == false && (x.PackingList.Contains("BTQ-FN") || x.Reference.Contains("BTQ-KB/RTP") || (x.Reference == null && x.DestinationName.Contains("GUDANG") && x.SourceName.Contains("GUDANG") && x.IsDistributed == true)));
 
             List<string> searchAttributes = new List<string>()
             {
