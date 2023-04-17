@@ -956,7 +956,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                         // var date = Convert.ToDateTime(reader["Date"].ToString());
                         InventoryMovementsMonthlyReportViewModel data = new InventoryMovementsMonthlyReportViewModel
                         {
-                            Date = reader["CreatedUtc"].ToString(),
+                            Date = Convert.ToDateTime( reader["CreatedUtc"]).ToString("MM/dd/yyyy hh:mm tt"),
                             ItemCode = reader["ItemCode"].ToString(),
                             ItemName = reader["ItemName"].ToString(),
                             ItemArticleRealizationOrder = reader["ItemArticleRealizationOrder"].ToString(),
@@ -992,7 +992,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                         // var date = Convert.ToDateTime(reader["Date"].ToString());
                         InventoryMovementsMonthlyReportViewModel data = new InventoryMovementsMonthlyReportViewModel
                         {
-                            Date = reader["CreatedUtc"].ToString(),
+                            Date = Convert.ToDateTime(reader["CreatedUtc"]).ToString("MM/dd/yyyy hh:mm tt"),
                             ItemCode = reader["ItemCode"].ToString(),
                             ItemName = reader["ItemName"].ToString(),
                             ItemArticleRealizationOrder = reader["ItemArticleRealizationOrder"].ToString(),
@@ -1046,7 +1046,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             {
                 foreach (var item in Query)
                 {
-                    result.Rows.Add(item.Date, item.Before , item.After , item.ItemArticleRealizationOrder, item.ItemCode,item.ItemDomesticSale, item.ItemName,
+                    result.Rows.Add(Convert.ToDateTime(item.Date).ToString("MM/dd/yyyy hh:mm tt"), item.Before , item.After , item.ItemArticleRealizationOrder, item.ItemCode,item.ItemDomesticSale, item.ItemName,
                           item.Quantity, item.Reference,item.StorageCode,item.StorageName,item.Type, item.Remark);
                 }
 
@@ -1214,7 +1214,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                         // var date = Convert.ToDateTime(reader["Date"].ToString());
                         InventoryMovementsMonthlyReportViewModel data = new InventoryMovementsMonthlyReportViewModel
                         {
-                            Date = reader["CreatedUtc"].ToString(),
+                            Date = Convert.ToDateTime(reader["CreatedUtc"]).ToString("MM/dd/yyyy hh:mm tt"),
                             ItemCode = reader["ItemCode"].ToString(),
                             ItemName = reader["ItemName"].ToString(),
                             ItemDomesticSale = Convert.ToDouble(reader["ItemDomesticSale"]),
@@ -1242,7 +1242,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                         // var date = Convert.ToDateTime(reader["Date"].ToString());
                         InventoryMovementsMonthlyReportViewModel data = new InventoryMovementsMonthlyReportViewModel
                         {
-                            Date = reader["CreatedUtc"].ToString(),
+                            Date = Convert.ToDateTime(reader["CreatedUtc"]).ToString("MM/dd/yyyy hh:mm tt"),
                             ItemCode = reader["ItemCode"].ToString(),
                             ItemName = reader["ItemName"].ToString(),
                             ItemDomesticSale = Convert.ToDouble(reader["ItemDomesticSale"]),
@@ -1284,7 +1284,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 foreach (var item in Query)
                 {
                     result.Rows.Add( item.ItemCode, item.ItemName, item.ItemDomesticSale,
-                          item.Quantity, item.Date, item.StorageCode, item.StorageName);
+                          item.Quantity, Convert.ToDateTime(item.Date).ToString("MM/dd/yyyy hh:mm tt"), item.StorageCode, item.StorageName);
                 }
 
             }
@@ -1314,7 +1314,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
                 sheet.Cells["A5"].LoadFromDataTable(result, true, (styling == true) ? OfficeOpenXml.Table.TableStyles.Light16 : OfficeOpenXml.Table.TableStyles.None);
                 sheet.Cells["A5"].Style.Font.Bold = true;
-                sheet.Cells["A" + 6 + ":M" + (Query.Count() - 1) + ""].AutoFitColumns();
+                //sheet.Cells["A" + 6 + ":M" + (Query.Count() - 1) + ""].AutoFitColumns();
                 MemoryStream stream = new MemoryStream();
                 package.SaveAs(stream);
                 return stream;

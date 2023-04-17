@@ -163,5 +163,41 @@ namespace Com.Bateeq.Service.Warehouse.Test.Facades.InventoryFacades
 		    var Response = facade.GenerateExcelInventoryAge((int)model.StorageId, model.ItemName);
 			Assert.NotNull(Response);
 		}
-	}
+        [Fact]
+        public async Task Should_Success_Get_StockAllByStorageReport()
+        {
+            DbSet<Inventory> dbSetInventory = _dbContext(GetCurrentMethod()).Set<Inventory>();
+            InventoryFacade facade = new InventoryFacade(GetServiceProvider().Object, _dbContext(GetCurrentMethod()));
+            var model = await dataUtil(facade, GetCurrentMethod(), _dbContext(GetCurrentMethod())).GetTestData();
+            var Response = facade.GetStockAll(model.StorageId.ToString(),DateTime.Now, DateTime.Now);
+            Assert.NotNull(Response);
+        }
+        [Fact]
+        public async Task Should_Success_Get_StockAllReport()
+        {
+            DbSet<Inventory> dbSetInventory = _dbContext(GetCurrentMethod()).Set<Inventory>();
+            InventoryFacade facade = new InventoryFacade(GetServiceProvider().Object, _dbContext(GetCurrentMethod()));
+            var model = await dataUtil(facade, GetCurrentMethod(), _dbContext(GetCurrentMethod())).GetTestData();
+            var Response = facade.GetStockAll("0", DateTime.Now, DateTime.Now);
+            Assert.NotNull(Response);
+        }
+        [Fact]
+        public async Task Should_Success_Get_StockAllExcel()
+        {
+            DbSet<Inventory> dbSetInventory = _dbContext(GetCurrentMethod()).Set<Inventory>();
+            InventoryFacade facade = new InventoryFacade(GetServiceProvider().Object, _dbContext(GetCurrentMethod()));
+            var model = await dataUtil(facade, GetCurrentMethod(), _dbContext(GetCurrentMethod())).GetTestData();
+            var Response = facade.GenerateExcelReportStockAll(model.StorageId.ToString(), model.CreatedUtc.Date.AddDays(-1), model.CreatedUtc.Date);
+            Assert.NotNull(Response);
+        }
+        [Fact]
+        public async Task Should_Success_Get_MovementAllReport()
+        {
+            DbSet<Inventory> dbSetInventory = _dbContext(GetCurrentMethod()).Set<Inventory>();
+            InventoryFacade facade = new InventoryFacade(GetServiceProvider().Object, _dbContext(GetCurrentMethod()));
+            var model = await dataUtil(facade, GetCurrentMethod(), _dbContext(GetCurrentMethod())).GetTestData();
+            var Response = facade.GetMovementAll("0", DateTime.Now, DateTime.Now);
+            Assert.NotNull(Response);
+        }
+    }
 }

@@ -48,6 +48,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.DataUtils.InventoryDataUtils
                 StorageId = 1,
                 StorageIsCentral = false,
                 StorageName = "name",
+                CreatedUtc =DateTime.Now
 
             };
         }
