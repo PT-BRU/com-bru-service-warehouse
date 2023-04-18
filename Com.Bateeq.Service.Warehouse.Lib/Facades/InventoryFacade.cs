@@ -1205,7 +1205,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             {
                 SqlCommand command = new SqlCommand(
                "select ItemCode,ItemName, ItemDomesticSale,Quantity,CreatedUtc,StorageCode,StorageName " +
-               "from Inventories where IsDeleted = 0  and (CONVERT(Date, CreatedUtc) between '" + dateFrom.Date + "' and '" + _dateTo.Date + "'  )", conn);
+               "from Inventories where IsDeleted = 0  and (CONVERT(Date, CreatedUtc) between '" + dateFrom.Date + "' and '" + _dateTo.Date + "'  ) and Storageid= " + storageId, conn);
                 List<InventoryMovementsMonthlyReportViewModel> dataList = new List<InventoryMovementsMonthlyReportViewModel>();
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
