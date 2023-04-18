@@ -293,15 +293,15 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
             }
         }
         [HttpGet("get-movements-all")]
-        public IActionResult GetMovementsAll(string storageId, DateTime dateFrom, DateTime dateTo, string info, int page = 1, int size = 25, string Order = "{}")
+        public IActionResult GetMovementsAll(string storage, DateTime dateFrom, DateTime dateTo, string info, int page = 1, int size = 25, string Order = "{}")
         {
             int offset = Convert.ToInt32(Request.Headers["x-timezone-offset"]);
             identityService.Username = User.Claims.Single(p => p.Type.Equals("username")).Value;
             string accept = Request.Headers["Accept"];
-            if(storageId == null) { storageId = "0"; }
+            if(storage == null) { storage = "0"; }
             try
             {
-                var data = facade.GetMovementAll(storageId,dateFrom, dateTo, page, size);
+                var data = facade.GetMovementAll(storage,dateFrom, dateTo, page, size);
 
                 return Ok(new
                 {
@@ -321,15 +321,15 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
             }
         }
         [HttpGet("get-movements-all/download")]
-        public IActionResult GetMovementsAllXls(string storageId, DateTime dateFrom, DateTime dateTo)
+        public IActionResult GetMovementsAllXls(string storage, DateTime dateFrom, DateTime dateTo)
         {
             try
             {
                 byte[] xlsInBytes;
                 string filename;
-                if (storageId == null) { storageId = "0"; }
+                if (storage == null) { storage = "0"; }
 
-                var xls = facade.GenerateExcelReportMovementAll(storageId, dateFrom, dateTo);
+                var xls = facade.GenerateExcelReportMovementAll(storage, dateFrom, dateTo);
                 filename = String.Format("Report Movement Stock - {0}.xlsx", dateFrom.ToString("MM-yyyy") +"-" + dateTo.ToString("MM-yyyy"));
 
                 xlsInBytes = xls.ToArray();
@@ -502,15 +502,15 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
 
         }
         [HttpGet("get-stock-all")]
-        public IActionResult GetStockAll(string storageId, DateTime dateFrom, DateTime dateTo, string info, int page = 1, int size = 25, string Order = "{}")
+        public IActionResult GetStockAll(string storage, DateTime dateFrom, DateTime dateTo, string info, int page = 1, int size = 25, string Order = "{}")
         {
             int offset = Convert.ToInt32(Request.Headers["x-timezone-offset"]);
             identityService.Username = User.Claims.Single(p => p.Type.Equals("username")).Value;
             string accept = Request.Headers["Accept"];
-            if (storageId == null) { storageId = "0"; }
+            if (storage == null) { storage = "0"; }
             try
             {
-                var data = facade.GetStockAll(storageId, dateFrom, dateTo, page, size);
+                var data = facade.GetStockAll(storage, dateFrom, dateTo, page, size);
 
                 return Ok(new
                 {
@@ -530,15 +530,15 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
             }
         }
         [HttpGet("get-stock-all/download")]
-        public IActionResult GetStockAllXls(string storageId, DateTime dateFrom, DateTime dateTo)
+        public IActionResult GetStockAllXls(string storage, DateTime dateFrom, DateTime dateTo)
         {
             try
             {
                 byte[] xlsInBytes;
                 string filename;
-                if (storageId == null) { storageId = "0"; }
+                if (storage == null) { storage = "0"; }
 
-                var xls = facade.GenerateExcelReportStockAll(storageId, dateFrom, dateTo);
+                var xls = facade.GenerateExcelReportStockAll(storage, dateFrom, dateTo);
                 filename = String.Format("Report Inventori - {0}.xlsx", dateFrom.ToString("MM-yyyy") + "-" + dateTo.ToString("MM-yyyy"));
 
                 xlsInBytes = xls.ToArray();
