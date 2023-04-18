@@ -1192,13 +1192,13 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         {
             DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
             DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1) : dateFrom;
-            var builder = new ConfigurationBuilder()
-                          .SetBasePath(Directory.GetCurrentDirectory())
-                          .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            IConfiguration _configuration = builder.Build();
-            var myConnectionString1 = _configuration.GetConnectionString("DefaultConnection");
-            SqlConnection conn = new SqlConnection(myConnectionString1);
-            //SqlConnection conn = new SqlConnection("Server=bru-db-server.database.windows.net,1433;Database=bru-db-warehouse;User=bru;password=Standar123.;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true");
+            //var builder = new ConfigurationBuilder()
+            //              .SetBasePath(Directory.GetCurrentDirectory())
+            //              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            //IConfiguration _configuration = builder.Build();
+            //var myConnectionString1 = _configuration.GetConnectionString("DefaultConnection");
+            //SqlConnection conn = new SqlConnection(myConnectionString1);
+            SqlConnection conn = new SqlConnection("Server=bru-db-server.database.windows.net,1433;Database=bru-db-warehouse;User=bru;password=Standar123.;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true");
 
             conn.Open();
             if (storageId != "0")
