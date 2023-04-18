@@ -1194,7 +1194,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1) : dateTo;
             var builder = new ConfigurationBuilder()
                           .SetBasePath(Directory.GetCurrentDirectory())
-                          .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true);
+                          .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             IConfiguration _configuration = builder.Build();
             var myConnectionString1 = _configuration.GetConnectionString("DefaultConnection");
             SqlConnection conn = new SqlConnection(myConnectionString1);
