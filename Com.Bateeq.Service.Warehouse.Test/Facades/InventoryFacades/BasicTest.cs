@@ -196,7 +196,20 @@ namespace Com.Bateeq.Service.Warehouse.Test.Facades.InventoryFacades
             DbSet<Inventory> dbSetInventory = _dbContext(GetCurrentMethod()).Set<Inventory>();
             InventoryFacade facade = new InventoryFacade(GetServiceProvider().Object, _dbContext(GetCurrentMethod()));
             var model = await dataUtil(facade, GetCurrentMethod(), _dbContext(GetCurrentMethod())).GetTestData();
-            var Response = facade.GetMovementAll("0", DateTime.Now, DateTime.Now);
+            var Response = facade.GetMovementAll("0", DateTime.Now.AddDays(-1), DateTime.Now.AddDays(2));
+            Assert.NotNull(Response);
+        }
+        [Fact]
+        public async Task Should_Success_Get_MovementAllReportbyStorage()
+        {
+            DbSet<Inventory> dbSetInventory = _dbContext(GetCurrentMethod()).Set<Inventory>();
+            InventoryFacade facade = new InventoryFacade(GetServiceProvider().Object, _dbContext(GetCurrentMethod()));
+            var model = await dataUtil(facade, GetCurrentMethod(), _dbContext(GetCurrentMethod())).GetTestData();
+            model.StorageId = 1;
+            model.CreatedUtc =DateTime.Now;
+
+
+            var Response = facade.GetMovementAll(model.StorageId.ToString(), DateTime.Now.AddDays(-2), DateTime.Now.AddDays(2));
             Assert.NotNull(Response);
         }
     }
