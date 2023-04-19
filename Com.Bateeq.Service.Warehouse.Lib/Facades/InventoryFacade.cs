@@ -933,7 +933,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         public IQueryable<InventoryMovementsMonthlyReportViewModel> GetMovementAllQuery(string storageId, DateTime dateFrom, DateTime dateTo)
         {
             DateTime _dateTo = dateTo == new DateTime(0001,1,1) ? DateTime.Now : dateTo;
-            DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1) : dateFrom;
+          //  DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1) : dateFrom;
             //var builder = new ConfigurationBuilder()
             //              .SetBasePath(Directory.GetCurrentDirectory())
             //              .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true);
@@ -947,7 +947,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             {
                 SqlCommand command = new SqlCommand(
                "select CreatedUtc,After,Before,ItemArticleRealizationOrder,ItemCode,ItemDomesticSale,ItemName,Quantity,Reference,StorageCode,StorageName,Type,Remark " +
-               "from InventoryMovements where IsDeleted = 0 and StorageId = '" + storageId + "' and (CONVERT(Date, CreatedUtc) between '" + _dateFrom.Date + "' and '" + _dateTo.Date + "'  )", conn);
+               "from InventoryMovements where IsDeleted = 0 and StorageId = '" + storageId + "' and (CONVERT(Date, CreatedUtc) between '" + dateFrom.Date + "' and '" + _dateTo.Date + "'  )", conn);
                 List<InventoryMovementsMonthlyReportViewModel> dataList = new List<InventoryMovementsMonthlyReportViewModel>();
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
