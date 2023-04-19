@@ -131,7 +131,8 @@ namespace Com.Bateeq.Service.Warehouse.Test.DataUtils.InventoryDataUtils
 				StorageId = 1,
 				StorageIsCentral = false,
 				StorageName = "name",
-				Type="IN"
+				Type="IN",
+               
 
 			};
 		}
