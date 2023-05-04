@@ -20,7 +20,6 @@ using CsvHelper.TypeConversion;
 using System.Dynamic;
 using Com.Bateeq.Service.Warehouse.Lib.Models.TransferModel;
 using Com.Bateeq.Service.Warehouse.Lib.Interfaces.PkbjInterfaces;
-using Com.Bateeq.Service.Warehouse.Lib.Serializers;
 using Microsoft.Extensions.Primitives;
 using System.IO;
 using System.Data;
