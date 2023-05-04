@@ -1299,20 +1299,20 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
                 sheet.Cells[$"A1:{col}1"].Value = string.Format("LAPORAN INVENTORI BARANG");
                 sheet.Cells[$"A1:{col}1"].Merge = true;
-                sheet.Cells[$"A1:{col}1"].Style.Font.Size = 15;
-                sheet.Cells[$"A1:{col}1"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
-                sheet.Cells[$"A1:{col}1"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                //sheet.Cells[$"A1:{col}1"].Style.Font.Size = 15;
+                //sheet.Cells[$"A1:{col}1"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                //sheet.Cells[$"A1:{col}1"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
                 sheet.Cells[$"A1:{col}1"].Style.Font.Bold = true;
 
                // sheet.Cells[$"A2:{col}2"].Value = string.Format("Periode {0} - {1}", tglawal, tglakhir);
-                sheet.Cells[$"A2:{col}2"].Merge = true;
-                sheet.Cells[$"A2:{col}2"].Style.Font.Size = 15;
-                sheet.Cells[$"A2:{col}2"].Style.Font.Bold = true;
-                sheet.Cells[$"A2:{col}2"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
-                sheet.Cells[$"A2:{col}2"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
-                sheet.Cells["A5"].LoadFromDataTable(result, true, (styling == true) ? OfficeOpenXml.Table.TableStyles.Light16 : OfficeOpenXml.Table.TableStyles.None);
-                sheet.Cells["A5"].Style.Font.Bold = true;
-                sheet.Cells["A" + 6 + ":M" + (Query.Count() - 1) + ""].AutoFitColumns();
+                //sheet.Cells[$"A2:{col}2"].Merge = true;
+                //sheet.Cells[$"A2:{col}2"].Style.Font.Size = 15;
+                //sheet.Cells[$"A2:{col}2"].Style.Font.Bold = true;
+                //sheet.Cells[$"A2:{col}2"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                //sheet.Cells[$"A2:{col}2"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                sheet.Cells["A5"].LoadFromDataTable(result,true);
+                sheet.Cells[$"A5:{col}5"].Style.Font.Bold = true;
+               // sheet.Cells["A" + 6 + ":M" + (Query.Count() - 1) + ""].AutoFitColumns();
                 MemoryStream stream = new MemoryStream();
                 package.SaveAs(stream);
                 return stream;

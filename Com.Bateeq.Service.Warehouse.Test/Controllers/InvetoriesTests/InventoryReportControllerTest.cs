@@ -733,7 +733,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.Controllers.InvetoriesTests
 			InventoryMovement testData = GetTestDataMovement(dbContext);
 
 			//Act			
-			IActionResult response = GetController(identityService, imapper.Object, service).GetStockAll(testData.StorageId.ToString(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>());
+			IActionResult response = GetController(identityService, imapper.Object, service).GetStockAll(testData.StorageId.ToString(), It.IsAny<string>(), It.IsAny<string>());
 
 
 			//Assert
@@ -757,7 +757,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.Controllers.InvetoriesTests
 			InventoryMovement testData = GetTestDataMovement(dbContext);
 
 			//Act
-			IActionResult response = GetController(identityService, imapper.Object, service).GetStockAll(testData.StorageId.ToString(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<string>(), 1, 25, "{}");
+			IActionResult response = GetController(identityService, imapper.Object, service).GetStockAll(testData.StorageId.ToString(), It.IsAny<string>(), It.IsAny<string>(), 1, 25, "{}");
 
 			//Assert
 			int statusCode = this.GetStatusCode(response);
@@ -780,7 +780,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.Controllers.InvetoriesTests
 			InventoryMovement testData = GetTestDataMovement(dbContext);
 
 			//Act
-			IActionResult response = GetController(identityService, imapper.Object, service).GetStockAllXls(testData.StorageId.ToString(), It.IsAny<DateTime>(), It.IsAny<DateTime>());
+			IActionResult response = GetController(identityService, imapper.Object, service).GetStockAllXls(testData.StorageId.ToString(), It.IsAny<string>());
 
 			//Assert
 			Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", response.GetType().GetProperty("ContentType").GetValue(response, null));
