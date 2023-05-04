@@ -169,7 +169,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.Facades.InventoryFacades
             DbSet<Inventory> dbSetInventory = _dbContext(GetCurrentMethod()).Set<Inventory>();
             InventoryFacade facade = new InventoryFacade(GetServiceProvider().Object, _dbContext(GetCurrentMethod()));
             var model = await dataUtil(facade, GetCurrentMethod(), _dbContext(GetCurrentMethod())).GetTestData();
-            var Response = facade.GetStockAll(model.StorageId.ToString(),DateTime.Now, DateTime.Now);
+            var Response = facade.GetStockAll(model.StorageId.ToString(),"0");
             Assert.NotNull(Response);
         }
         [Fact]
@@ -178,7 +178,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.Facades.InventoryFacades
             DbSet<Inventory> dbSetInventory = _dbContext(GetCurrentMethod()).Set<Inventory>();
             InventoryFacade facade = new InventoryFacade(GetServiceProvider().Object, _dbContext(GetCurrentMethod()));
             var model = await dataUtil(facade, GetCurrentMethod(), _dbContext(GetCurrentMethod())).GetTestData();
-            var Response = facade.GetStockAll("0", DateTime.Now, DateTime.Now);
+            var Response = facade.GetStockAll("0", "0");
             Assert.NotNull(Response);
         }
         [Fact]
@@ -187,7 +187,7 @@ namespace Com.Bateeq.Service.Warehouse.Test.Facades.InventoryFacades
             DbSet<Inventory> dbSetInventory = _dbContext(GetCurrentMethod()).Set<Inventory>();
             InventoryFacade facade = new InventoryFacade(GetServiceProvider().Object, _dbContext(GetCurrentMethod()));
             var model = await dataUtil(facade, GetCurrentMethod(), _dbContext(GetCurrentMethod())).GetTestData();
-            var Response = facade.GenerateExcelReportStockAll(model.StorageId.ToString(), model.CreatedUtc.Date.AddDays(-1), model.CreatedUtc.Date);
+            var Response = facade.GenerateExcelReportStockAll(model.StorageId.ToString(), "0");
             Assert.NotNull(Response);
         }
         [Fact]

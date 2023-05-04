@@ -1176,11 +1176,11 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             return Query.ToList();
         }
-        public Tuple<List<InventoryMovementsMonthlyReportViewModel>, int> GetStockAll(string storageId, DateTime dateFrom, DateTime dateTo, int page = 1, int size = 25)
+        public Tuple<List<InventoryMovementsMonthlyReportViewModel>, int> GetStockAll(string storageId,string SelectedQuantity, int page = 1, int size = 25)
         {
 
 
-            var Query = GetStockAllQuery(storageId, dateFrom, dateTo);
+            var Query = GetStockAllQuery(storageId, SelectedQuantity);
 
             Pageable<InventoryMovementsMonthlyReportViewModel> pageable = new Pageable<InventoryMovementsMonthlyReportViewModel>(Query, page - 1, size);
             List<InventoryMovementsMonthlyReportViewModel> Data = pageable.Data.ToList<InventoryMovementsMonthlyReportViewModel>();
@@ -1188,10 +1188,9 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             return Tuple.Create(Data, TotalData);
         }
-        public IQueryable<InventoryMovementsMonthlyReportViewModel> GetStockAllQuery(string storageId, DateTime dateFrom, DateTime dateTo)
+        public IQueryable<InventoryMovementsMonthlyReportViewModel> GetStockAllQuery(string storageId, string SelectedQuantity)
         {
-            DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
-            DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1) : dateFrom;
+            
             //var builder = new ConfigurationBuilder()
             //              .SetBasePath(Directory.GetCurrentDirectory())
             //              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
@@ -1199,13 +1198,16 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             //var myConnectionString1 = _configuration.GetConnectionString("DefaultConnection");
             //SqlConnection conn = new SqlConnection(myConnectionString1);
             SqlConnection conn = new SqlConnection("Server=bru-db-server.database.windows.net,1433;Database=bru-db-warehouse;User=bru;password=Standar123.;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true");
-
+            if(SelectedQuantity =="0")
+            {
+                SelectedQuantity = "= 0";
+            }
             conn.Open();
             if (storageId != "0")
             {
                 SqlCommand command = new SqlCommand(
                "select ItemCode,ItemName, ItemDomesticSale,Quantity,CreatedUtc,StorageCode,StorageName " +
-               "from Inventories where IsDeleted = 0  and (CONVERT(Date, CreatedUtc) between '" + dateFrom.Date + "' and '" + _dateTo.Date + "'  ) and Storageid= " + storageId, conn);
+               "from Inventories where IsDeleted = 0  and quantity " + SelectedQuantity + " and Storageid= " + storageId, conn);
                 List<InventoryMovementsMonthlyReportViewModel> dataList = new List<InventoryMovementsMonthlyReportViewModel>();
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -1233,7 +1235,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             {
                 SqlCommand command = new SqlCommand(
                "Select ItemCode,ItemName, ItemDomesticSale,Quantity,CreatedUtc,StorageCode,StorageName " +
-               "from Inventories where IsDeleted = 0  and (CONVERT(Date, CreatedUtc) between '" + dateFrom.Date + "' and '" + _dateTo.Date + "'  )", conn);
+               "from Inventories where IsDeleted = 0   and quantity " + SelectedQuantity , conn);
                 List<InventoryMovementsMonthlyReportViewModel> dataList = new List<InventoryMovementsMonthlyReportViewModel>();
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -1259,11 +1261,11 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             }
 
         }
-        public MemoryStream GenerateExcelReportStockAll(string storageId, DateTime dateFrom, DateTime dateTo)
+        public MemoryStream GenerateExcelReportStockAll(string storageId, string SelectedQuantity)
         {
 
 
-            var Query = GetStockAllQuery(storageId, dateFrom, dateTo);
+            var Query = GetStockAllQuery(storageId, SelectedQuantity);
 
             DataTable result = new DataTable();
              
@@ -1295,8 +1297,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
 
                 var col = (char)('A' + (result.Columns.Count - 1));
-                string tglawal = dateFrom.ToString("dd MMM yyyy", new CultureInfo("id-ID"));
-                string tglakhir = dateTo.ToString("dd MMM yyyy", new CultureInfo("id-ID"));
+
 
                 sheet.Cells[$"A1:{col}1"].Value = string.Format("LAPORAN INVENTORI BARANG");
                 sheet.Cells[$"A1:{col}1"].Merge = true;
@@ -1305,16 +1306,15 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 sheet.Cells[$"A1:{col}1"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
                 sheet.Cells[$"A1:{col}1"].Style.Font.Bold = true;
 
-                sheet.Cells[$"A2:{col}2"].Value = string.Format("Periode {0} - {1}", tglawal, tglakhir);
+               // sheet.Cells[$"A2:{col}2"].Value = string.Format("Periode {0} - {1}", tglawal, tglakhir);
                 sheet.Cells[$"A2:{col}2"].Merge = true;
                 sheet.Cells[$"A2:{col}2"].Style.Font.Size = 15;
                 sheet.Cells[$"A2:{col}2"].Style.Font.Bold = true;
                 sheet.Cells[$"A2:{col}2"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
                 sheet.Cells[$"A2:{col}2"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
-
                 sheet.Cells["A5"].LoadFromDataTable(result, true, (styling == true) ? OfficeOpenXml.Table.TableStyles.Light16 : OfficeOpenXml.Table.TableStyles.None);
                 sheet.Cells["A5"].Style.Font.Bold = true;
-                //sheet.Cells["A" + 6 + ":M" + (Query.Count() - 1) + ""].AutoFitColumns();
+                sheet.Cells["A" + 6 + ":M" + (Query.Count() - 1) + ""].AutoFitColumns();
                 MemoryStream stream = new MemoryStream();
                 package.SaveAs(stream);
                 return stream;

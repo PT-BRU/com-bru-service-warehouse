@@ -259,13 +259,13 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                     
                     model.Code = code;
                     model.Date = DateTimeOffset.Now;
-                    foreach (var i in model.Items)
+                    foreach (ExpeditionItem i in model.Items)
                     {
                         TransferOutDoc transferOutDoc = new TransferOutDoc();
                         i.Id = 0;
                         totalweight += i.Weight;
                         string CodeTransferOut = GenerateCode("BTQ-KB/EXP");
-                        var SPK = dbContext.SPKDocs.Where(x => x.PackingList == i.PackingList).Single();
+                        SPKDocs SPK = dbContext.SPKDocs.Where(x => x.PackingList == i.PackingList).Single();
                         i.SPKDocsId = Convert.ToInt32(SPK.Id);
                         SPK.IsDistributed = true;
                         transferOutDoc.Code = CodeTransferOut;
@@ -346,6 +346,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
 
                             //});
+                           
                             EntityExtension.FlagForCreate(d, username, USER_AGENT);
                             EntityExtension.FlagForCreate(movement, username, USER_AGENT);
                             this.dbSetInventoryMovement.Add(movement);
@@ -357,13 +358,13 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                         foreach (var trfOut in transferOutDocItems)
                         {
                             EntityExtension.FlagForCreate(trfOut, username, USER_AGENT);
-                        }
-
+                        } 
                         EntityExtension.FlagForCreate(i, username, USER_AGENT);
 
                     }
                     model.Weight = totalweight;
                     model.Remark = "";
+
                     EntityExtension.FlagForCreate(model, username, USER_AGENT);
 
                     dbSet.Add(model);

@@ -502,7 +502,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
 
         }
         [HttpGet("get-stock-all")]
-        public IActionResult GetStockAll(string storage, DateTime dateFrom, DateTime dateTo, string info, int page = 1, int size = 25, string Order = "{}")
+        public IActionResult GetStockAll(string storage, string SelectedQuantity, string info, int page = 1, int size = 25, string Order = "{}")
         {
             int offset = Convert.ToInt32(Request.Headers["x-timezone-offset"]);
             identityService.Username = User.Claims.Single(p => p.Type.Equals("username")).Value;
@@ -510,7 +510,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
             if (storage == null) { storage = "0"; }
             try
             {
-                var data = facade.GetStockAll(storage, dateFrom, dateTo, page, size);
+                var data = facade.GetStockAll(storage, SelectedQuantity, page, size);
 
                 return Ok(new
                 {
@@ -530,7 +530,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
             }
         }
         [HttpGet("get-stock-all/download")]
-        public IActionResult GetStockAllXls(string storage, DateTime dateFrom, DateTime dateTo)
+        public IActionResult GetStockAllXls(string storage, string SelectedQuantity)
         {
             try
             {
@@ -538,8 +538,8 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
                 string filename;
                 if (storage == null) { storage = "0"; }
 
-                var xls = facade.GenerateExcelReportStockAll(storage, dateFrom, dateTo);
-                filename = String.Format("Report Inventori - {0}.xlsx", dateFrom.ToString("MM-yyyy") + "-" + dateTo.ToString("MM-yyyy"));
+                var xls = facade.GenerateExcelReportStockAll(storage, SelectedQuantity);
+                filename = String.Format("Report Inventori.xlsx");
 
                 xlsInBytes = xls.ToArray();
                 var file = File(xlsInBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);
