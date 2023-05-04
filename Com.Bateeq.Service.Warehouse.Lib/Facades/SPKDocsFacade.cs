@@ -11,8 +11,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Text;
-using Com.Bateeq.Service.Warehouse.Lib;
 using Com.Bateeq.Service.Warehouse.Lib.Helpers;
 
 namespace Com.Bateeq.Service.Warehouse.Lib.Facades
