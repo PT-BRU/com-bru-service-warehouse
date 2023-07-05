@@ -410,7 +410,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
                          select new InventoryMovementsReportViewModel
                          {
-                             Date = c.Date,
+                             Date = c.Date.AddHours(7),
                              ItemCode = c.ItemCode,
                              ItemName = c.ItemName,
                              ItemArticleRealizationOrder = c.ItemArticleRealizationOrder,
