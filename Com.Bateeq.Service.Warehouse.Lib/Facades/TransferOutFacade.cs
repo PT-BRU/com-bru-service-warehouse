@@ -242,9 +242,9 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                         EntityExtension.FlagForCreate(i, username, USER_AGENT);
                     }
                     dbSetSPKDocs.Add(sPKDocs);
-                    //Created = await dbContext.SaveChangesAsync();
-
-                    foreach(var i in sPKDocs.Items)
+                    Created = await dbContext.SaveChangesAsync();
+                    var spk = dbContext.SPKDocs.Single(a => a.PackingList == sPKDocs.PackingList);
+                    foreach (var i in sPKDocs.Items)
                     {
                         expeditionDetails.Add(new ExpeditionDetail
                         {
@@ -262,7 +262,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                             Uom = i.ItemUom,
                             Size = i.ItemSize,
                             //SPKDocsId = (int)dbContext.SPKDocs.OrderByDescending(x=>x.Id).FirstOrDefault().Id + 1
-                            SPKDocsId = (int)sPKDocs.Id
+                            SPKDocsId = (int)spk.Id
                         });
                     }
 
@@ -283,7 +283,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                         SourceId = (int)sPKDocs.SourceId,
                         SourceName = sPKDocs.SourceName,
                         //SPKDocsId = (int)dbContext.SPKDocs.OrderByDescending(x => x.Id).FirstOrDefault().Id + 1,
-                        SPKDocsId = (int)sPKDocs.Id,
+                        SPKDocsId = (int)spk.Id,
                         Weight = sPKDocs.Weight,
                         Details = expeditionDetails
                     });
