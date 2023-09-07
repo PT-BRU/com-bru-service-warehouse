@@ -668,7 +668,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                  ",[ItemSize],[ItemUom],[Quantity], a.[Reference], a.[Remark],[StorageCode],[StorageId],[StorageName],[Type] , t. SourceName ,t.DestinationName " +
                  "FROM[dbo].[InventoryMovements] a " +
                  "join TransferOutDocs t on a.Reference = t.Code " +
-                 " where Month(a.Date) = " + lastDay.Month + " and Year(a.Date)= " + lastDay.Year + " and a.IsDeleted = 0 and a.Type='OUT' ",, conn);
+                 " where Month(a.Date) = " + lastDay.Month + " and Year(a.Date)= " + lastDay.Year + " and a.IsDeleted = 0 and a.Type='OUT' ", conn);
             List<InventoryMovementsMonthlyReportViewModel> dataList = new List<InventoryMovementsMonthlyReportViewModel>();
             using (SqlDataReader reader = command.ExecuteReader())
             {
