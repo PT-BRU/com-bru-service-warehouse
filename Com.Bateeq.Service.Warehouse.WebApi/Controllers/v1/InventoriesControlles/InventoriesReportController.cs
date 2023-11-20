@@ -292,6 +292,9 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
                 return StatusCode(General.INTERNAL_ERROR_STATUS_CODE, Result);
             }
         }
+        #endregion
+
+        #region getMovement All
         [HttpGet("get-movements-all")]
         public IActionResult GetMovementsAll(string storage, DateTime dateFrom, DateTime dateTo, string info, int page = 1, int size = 25, string Order = "{}")
         {
@@ -501,6 +504,9 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
             }
 
         }
+        #endregion
+
+        #region getStock All
         [HttpGet("get-stock-all")]
         public IActionResult GetStockAll(string storage, string SelectedQuantity, string info, int page = 1, int size = 25, string Order = "{}")
         {
@@ -618,7 +624,64 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
                 return StatusCode(General.INTERNAL_ERROR_STATUS_CODE, Result);
             }
         }
-        
+
+        #endregion
+
+        #region getStockByPeriode All
+        [HttpGet("get-stock-by-period")]
+        public IActionResult GetStockByPeriod(string storage, DateTime dateTo, string info, int page = 1, int size = 100, string Order = "{}")
+        {
+            int offset = Convert.ToInt32(Request.Headers["x-timezone-offset"]);
+            identityService.Username = User.Claims.Single(p => p.Type.Equals("username")).Value;
+            string accept = Request.Headers["Accept"];
+            if (storage == null) { storage = "0"; }
+            try
+            {
+                var data = facade.GetStockByPeriod(storage, dateTo, page, size);
+
+                return Ok(new
+                {
+                    apiVersion = ApiVersion,
+                    data = data.Item1,
+                    info = new { total = data.Item2 },
+                    message = General.OK_MESSAGE,
+                    statusCode = General.OK_STATUS_CODE
+                });
+            }
+            catch (Exception e)
+            {
+                Dictionary<string, object> Result =
+                    new ResultFormatter(ApiVersion, General.INTERNAL_ERROR_STATUS_CODE, e.StackTrace)
+                    .Fail();
+                return StatusCode(General.INTERNAL_ERROR_STATUS_CODE, Result);
+            }
+        }
+
+        [HttpGet("get-stock-by-period/download")]
+        public IActionResult GetStockByPeriodXls(string storage, DateTime dateTo)
+        {
+            try
+            {
+                byte[] xlsInBytes;
+                string filename;
+                if (storage == null) { storage = "0"; }
+
+                var xls = facade.GetXLSStockByPeriod(storage, dateTo);
+                filename = String.Format("Laporan Stock.xlsx");
+
+                xlsInBytes = xls.ToArray();
+                var file = File(xlsInBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);
+
+                return file;
+            }
+            catch (Exception e)
+            {
+                Dictionary<string, object> Result =
+                    new ResultFormatter(ApiVersion, General.INTERNAL_ERROR_STATUS_CODE, e.Message)
+                    .Fail();
+                return StatusCode(General.INTERNAL_ERROR_STATUS_CODE, Result);
+            }
+        }
         #endregion
     }
 }
