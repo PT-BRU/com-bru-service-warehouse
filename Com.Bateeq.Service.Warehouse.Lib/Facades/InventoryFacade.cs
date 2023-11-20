@@ -918,7 +918,9 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             package.SaveAs(stream);
             return stream;
         }
+        #endregion
 
+        #region GetMovementAll
         public Tuple<List<InventoryMovementsMonthlyReportViewModel>, int> GetMovementAll(string storageId, DateTime dateFrom, DateTime dateTo, int page = 1, int size = 25)
         {
 
@@ -1177,6 +1179,9 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             return Query.ToList();
         }
+        #endregion
+
+        #region GetStockAll
         public Tuple<List<InventoryMovementsMonthlyReportViewModel>, int> GetStockAll(string storageId,string SelectedQuantity, int page = 1, int size = 25)
         {
 
@@ -1191,13 +1196,6 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         }
         public IQueryable<InventoryMovementsMonthlyReportViewModel> GetStockAllQuery(string storageId, string SelectedQuantity)
         {
-            
-            //var builder = new ConfigurationBuilder()
-            //              .SetBasePath(Directory.GetCurrentDirectory())
-            //              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            //IConfiguration _configuration = builder.Build();
-            //var myConnectionString1 = _configuration.GetConnectionString("DefaultConnection");
-            //SqlConnection conn = new SqlConnection(myConnectionString1);
             SqlConnection conn = new SqlConnection("Server=bru-db-server.database.windows.net,1433;Database=bru-db-warehouse;User=bru;password=Standar123.;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true");
             if(SelectedQuantity =="0")
             {
@@ -1932,6 +1930,249 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             return Excel.CreateExcel(new List<KeyValuePair<DataTable, string>>() { new KeyValuePair<DataTable, string>(result, "Age") }, true);
         }
 
+        #endregion
+
+        #region GetStockByPeriod
+        public Tuple<List<InventoryByPeriodReportViewModel>, int> GetStockByPeriod(string storageId, DateTime dateTo, int page = 1, int size = 100)
+        {
+            DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
+            var Query = GetStockByPeriodQuery(storageId, _dateTo, "paging", page, size);
+
+            SqlConnection conn = new SqlConnection("Server=bru-db-server.database.windows.net,1433;Database=bru-db-warehouse;User=bru;password=Standar123.;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true");
+            conn.Open();
+            var totalQuery = "SELECT Count( ItemCode) as count FROM [InventoryMovements] a " +
+                "WHERE Lastmodifiedutc = (SELECT MAX(Lastmodifiedutc) FROM[InventoryMovements] WHERE itemcode = a.itemcode and StorageCode=a.StorageCode) " +
+                "and isdeleted = 0 and [CreatedUtc] < '" + _dateTo.Date + "' ";
+
+            if (storageId != "0")
+            {
+                totalQuery += " and StorageId= " + storageId;
+            }
+
+            int TotalData = 0;
+            SqlCommand command = new SqlCommand(totalQuery, conn);
+            using (SqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    TotalData = Convert.ToInt32(reader["count"]);
+                }
+            }
+            conn.Close();
+
+            return Tuple.Create(Query.ToList(), TotalData);
+        }
+        public IQueryable<InventoryByPeriodReportViewModel> GetStockByPeriodQuery(string storageId, DateTime dateTo, string type, int page = 1, int size = 100)
+        {
+            SqlConnection conn = new SqlConnection("Server=bru-db-server.database.windows.net,1433;Database=bru-db-warehouse;User=bru;password=Standar123.;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true");
+            conn.Open();
+
+            string query = "SELECT ItemCode, after Quantity, storagename as location, type, CONVERT(varchar, LastModifiedUtc, 111) as ReceivedDate " +
+                "FROM[InventoryMovements] a " +
+                "WHERE LastModifiedUtc = (SELECT MAX(LastModifiedUtc) FROM[InventoryMovements] WHERE itemcode = a.itemcode " +
+                "and StorageCode = a.StorageCode)  " +
+                "and isdeleted = 0 and [CreatedUtc] < '" + dateTo.Date + "'";
+
+            if (storageId != "0")
+            {
+                query += " and StorageId= " + storageId;
+            }
+
+            if (type != "xls")
+            {
+                query += " ORDER BY CreatedUtc DESC OFFSET " + page + " ROWS FETCH NEXT " + size + " ROWS ONLY ";
+            }
+            
+            SqlCommand command = new SqlCommand(query, conn);
+            List<string> itemcodes = new List<string>();
+            List<InventoryByPeriodReportViewModel> dataList = new List<InventoryByPeriodReportViewModel>();
+            List<InventoryByPeriodReportViewModel> reportData = new List<InventoryByPeriodReportViewModel>();
+            using (SqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    // var date = Convert.ToDateTime(reader["Date"].ToString());
+                    InventoryByPeriodReportViewModel data = new InventoryByPeriodReportViewModel
+                    {
+                        Brand = "BATEEQ",
+                        ReceivedDate = reader["ReceivedDate"].ToString(),
+                        Barcode = reader["ItemCode"].ToString(),
+                        Location = reader["location"].ToString(),
+                        Quantity = Convert.ToDouble(reader["Quantity"]),
+                        //Date= reader["date"].ToString()
+                    };
+                    dataList.Add(data);
+                    if (itemcodes.Count == 0)
+                    {
+                        itemcodes.Add(("'" + data.Barcode + "'"));
+                    }
+                    else
+                    {
+                        if(!itemcodes.Contains(("'" + data.Barcode + "'")))
+                        {
+                            itemcodes.Add(("'" + data.Barcode + "'"));
+                        }
+                    }
+                }
+            }
+
+            conn.Close();
+            var itemcode = "(" + string.Join(",", itemcodes) + ")";
+            SqlConnection connCore = new SqlConnection("Server=bru-db-server.database.windows.net,1433;Database=bru-db-core;User=bru;password=Standar123.;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true");
+
+            string itemQuery = "SELECT Code, ArticleRealizationOrder, CategoryDocName, CollectionDocName,  Name, ColorDocName, " +
+                "CounterDocName, DomesticSale, DomesticCOGS, DomesticRetail, SeasonDocName, Size, StyleDocName, " +
+                "MaterialDocName FROM Items WHERE _IsDeleted = 0 and Code in " + itemcode;
+
+            connCore.Open();
+            SqlCommand commandCore = new SqlCommand(itemQuery, connCore);
+            List<InventoryByPeriodReportViewModel> dataItem = new List<InventoryByPeriodReportViewModel>();
+            using (SqlDataReader reader = commandCore.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    InventoryByPeriodReportViewModel item = new InventoryByPeriodReportViewModel
+                    {
+                        Barcode = reader["Code"].ToString(),
+                        ItemName = reader["Name"].ToString(),
+                        ItemArticleRealizationOrder = reader["ArticleRealizationOrder"].ToString(),
+                        Size = reader["Size"].ToString(),
+                        SeasonCode = reader["SeasonDocName"].ToString(),
+                        Category = reader["CategoryDocName"].ToString(),
+                        OriginalCost = Convert.ToDouble(reader["DomesticCOGS"]),
+                        Gross = Convert.ToDouble(reader["DomesticSale"]),
+                        Collection = reader["CollectionDocName"].ToString(),
+                        Color = reader["ColorDocName"].ToString(),
+                    };
+                    dataItem.Add(item);
+                }
+            }
+            connCore.Close();
+
+            reportData = (from a in dataList
+                          join b in dataItem on a.Barcode equals b.Barcode
+                          select new InventoryByPeriodReportViewModel
+                          {
+                              Barcode = a.Barcode,
+                              Brand = a.Brand,
+                              ReceivedDate = a.ReceivedDate,
+                              Category = b.Category,
+                              Collection = b.Collection,
+                              SeasonCode = b.SeasonCode,
+                              SeasonYear = string.IsNullOrEmpty(b.SeasonCode) ? "ALL" : b.SeasonCode.Substring(2, 2),
+                              ItemArticleRealizationOrder = b.ItemArticleRealizationOrder,
+                              ItemName = b.ItemName,
+                              Color = b.Color,
+                              Size = b.Size,
+                              Quantity = a.Quantity,
+                              Location = a.Location,
+                              OriginalCost = b.OriginalCost,
+                              Gross = b.Gross,
+                              TotalOriCost = a.Quantity * b.OriginalCost,
+                              TotalGross = a.TotalGross * a.Quantity,
+                              Year = a.ReceivedDate.Substring(2, 2) ,
+                              Month= a.ReceivedDate.Substring(5, 2) ,
+                          }).ToList();
+
+            return reportData.AsQueryable().OrderBy(a => a.ReceivedDate).ThenBy(a => a.Barcode);
+
+        }
+
+        public MemoryStream GetXLSStockByPeriod(string storageId, DateTime dateTo)
+        {
+            DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
+            var Query = GetStockByPeriodQuery(storageId, _dateTo, "xls"); 
+
+            DataTable result = new DataTable();
+
+            result.Columns.Add(new DataColumn() { ColumnName = "Org", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Brand", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Barcode", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Category", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Collection", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Season Code", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Season Year", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "RO/Article", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Nama", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Color", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Size", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Qty", DataType = typeof(double) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Received Date", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Month", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Year", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Description", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Location", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Original Cost", DataType = typeof(double) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Landed Cost", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Gross", DataType = typeof(double) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Nett", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Disc %", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Disc Name", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Total Original Cost", DataType = typeof(double) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Total Landed Cost", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Total Gross", DataType = typeof(double) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Total Nett", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Margin", DataType = typeof(String) });
+
+            string storage = "";
+            if (Query.ToArray().Count() == 0)
+                result.Rows.Add("", "", "", "", "", "", "", "", "", "", "", 0, "", "", "", "", "", 0, "", "", "", 0, "", 0, "", "");
+            // to allow column name to be generated properly for empty data as template
+            else
+            {
+                foreach (var item in Query)
+                {
+                    if (storageId != "0")
+                    {
+                        storage = item.Location;
+                    }
+                    result.Rows.Add(item.Brand, item.Brand, item.Barcode, item.Category, item.Collection,item.SeasonCode, item.SeasonYear,
+                        item.ItemArticleRealizationOrder, item.ItemName, item.Color, item.Size, item.Quantity, item.ReceivedDate,
+                        item.Month, item.Year,"" , item.Location, item.OriginalCost, "", item.Gross, "", "","", item.TotalOriCost,
+                        "", item.TotalGross, "", "");
+                }
+
+            }
+            bool styling = true;
+            using (var package = new ExcelPackage())
+            {
+                var sheet = package.Workbook.Worksheets.Add("Sheet 1");
+
+
+                var col = (char)('A' + (result.Columns.Count - 1));
+
+
+                sheet.Cells[$"A1:AB1"].Value = string.Format("LAPORAN STOCK per PERIODE");
+                sheet.Cells[$"A1:AB1"].Merge = true;
+                sheet.Cells[$"A1:AB1"].Style.Font.Size = 15;
+                sheet.Cells[$"A1:AB1"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                sheet.Cells[$"A1:AB1"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                sheet.Cells[$"A1:AB1"].Style.Font.Bold = true;
+
+                sheet.Cells[$"A2:AA2"].Value = string.Format("Periode {0}", _dateTo.ToShortDateString());
+                sheet.Cells[$"A2:AA2"].Merge = true;
+                sheet.Cells[$"A2:AA2"].Style.Font.Size = 15;
+                sheet.Cells[$"A2:AA2"].Style.Font.Bold = true;
+                sheet.Cells[$"A2:AA2"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                sheet.Cells[$"A2:AA2"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+
+                sheet.Cells[$"A3:AA3"].Value = string.Format("Storage {0}", string.IsNullOrEmpty(storage) ? "ALL" : storage);
+                sheet.Cells[$"A3:AA3"].Merge = true;
+                sheet.Cells[$"A3:AA3"].Style.Font.Size = 15;
+                sheet.Cells[$"A3:AA3"].Style.Font.Bold = true;
+                sheet.Cells[$"A3:AA3"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                sheet.Cells[$"A3:AA3"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+
+                sheet.Cells["A5"].LoadFromDataTable(result, true);
+                sheet.Cells[$"A5:AB5"].Style.Font.Bold = true;
+                // sheet.Cells["A" + 6 + ":M" + (Query.Count() - 1) + ""].AutoFitColumns();
+                MemoryStream stream = new MemoryStream();
+                package.SaveAs(stream);
+                return stream;
+            }
+
+
+        }
         #endregion
     }
 }
