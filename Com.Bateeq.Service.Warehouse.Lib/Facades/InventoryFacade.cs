@@ -657,14 +657,17 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             SqlConnection conn = new SqlConnection("Server=bru-db-server.database.windows.net,1433;Database=bru-db-warehouse;User=bru;password=Standar123.;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true");
             conn.Open();
             SqlCommand command = new SqlCommand(
-                "SELECT[After], a.CreatedUtc,[Before],  CONVERT(Date, a.Date) Date,[ItemArticleRealizationOrder],[ItemCode],[ItemDomesticSale],[ItemInternationalSale],[ItemName] " +
-                ",[ItemSize],[ItemUom],[Quantity], a.[Reference], a.[Remark],[StorageCode],[StorageId],[StorageName],[Type]" +
-                ", case when type = 'IN' then(select top 1 SourceName from TransferInDocs where isdeleted = 0 and TransferInDocs.code=a.reference) " +
-                "		else (select top 1 SourceName from TransferOutDocs where isdeleted = 0 and TransferOutDocs.code=a.reference) end as SourceName" +
-                ", case when type = 'IN' then(select top 1 DestinationName from TransferInDocs where isdeleted = 0 and TransferInDocs.code=a.reference)" +
-                "		else (select top 1 DestinationName from TransferOutDocs where isdeleted = 0 and TransferOutDocs.code=a.reference) end as DestinationName" +
-                " FROM[dbo].[InventoryMovements] a" +
-                " where Month(a.Date) = " + lastDay.Month + " and Year(a.Date)= " + lastDay.Year + " and a.IsDeleted = 0", conn);
+               "SELECT[After], a.CreatedUtc,[Before],  CONVERT(Date, a.Date) Date,[ItemArticleRealizationOrder],[ItemCode],[ItemDomesticSale],[ItemInternationalSale],[ItemName]  " +
+                ",[ItemSize],[ItemUom],[Quantity], a.[Reference], a.[Remark],[StorageCode],[StorageId],[StorageName],[Type] ,  t.SourceName , t.DestinationName " +
+                 "FROM[dbo].[InventoryMovements] a " +
+                 "join TransferInDocs t on a.Reference = t.Code " +
+                  " where Month(a.Date) = " + lastDay.Month + " and Year(a.Date)= " + lastDay.Year + " and a.IsDeleted = 0 and a.Type='IN' " +
+                 "union all " +
+                 "SELECT[After], a.CreatedUtc,[Before],  CONVERT(Date, a.Date) Date,[ItemArticleRealizationOrder],[ItemCode],[ItemDomesticSale],[ItemInternationalSale],[ItemName]  " +
+                 ",[ItemSize],[ItemUom],[Quantity], a.[Reference], a.[Remark],[StorageCode],[StorageId],[StorageName],[Type] , t. SourceName ,t.DestinationName " +
+                 "FROM[dbo].[InventoryMovements] a " +
+                 "join TransferOutDocs t on a.Reference = t.Code " +
+                 " where Month(a.Date) = " + lastDay.Month + " and Year(a.Date)= " + lastDay.Year + " and a.IsDeleted = 0 and a.Type='OUT' ", conn);
             List<InventoryMovementsMonthlyReportViewModel> dataList = new List<InventoryMovementsMonthlyReportViewModel>();
             using (SqlDataReader reader = command.ExecuteReader())
             {
@@ -1203,7 +1206,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             {
                 SqlCommand command = new SqlCommand(
                "select ItemCode,ItemName, ItemDomesticSale,Quantity,CreatedUtc,StorageCode,StorageName " +
-               "from Inventories where IsDeleted = 0  and quantity " + SelectedQuantity + " and Storageid= " + storageId, conn);
+               "from Inventories where IsDeleted = 0  and quantity " + SelectedQuantity + " and Storageid= " + storageId + " and LastModifiedUtc <='2023-05-08'", conn);
                 List<InventoryMovementsMonthlyReportViewModel> dataList = new List<InventoryMovementsMonthlyReportViewModel>();
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
