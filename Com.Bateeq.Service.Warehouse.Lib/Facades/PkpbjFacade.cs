@@ -390,6 +390,25 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             }
         }
 
+        private List<SizeViewModel> GetSize(string code)
+        {
+            string itemUri = "master/sizes/sizename";
+            IHttpClientService httpClient = (IHttpClientService)serviceProvider.GetService(typeof(IHttpClientService));
+
+            var response = httpClient.GetAsync($"{APIEndpoint.Core}{itemUri}/{code}").Result;
+            if (response.IsSuccessStatusCode)
+            {
+                var content = response.Content.ReadAsStringAsync().Result;
+                Dictionary<string, object> result = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
+                List<SizeViewModel> viewModel = JsonConvert.DeserializeObject<List<SizeViewModel>>(result.GetValueOrDefault("data").ToString());
+                return viewModel;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public Tuple<bool, List<object>> UploadValidate(ref List<SPKDocsCsvViewModel> Data, List<KeyValuePair<string, StringValues>> Body)
         {
             List<object> ErrorList = new List<object>();
@@ -428,20 +447,21 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 {
                     ErrorMessage = string.Concat(ErrorMessage, "Nama tidak boleh kosong, ");
                 }
-                //else if (Data.Any(d => d != productVM && d.name.Equals(productVM.name)))
-                //{
-                //    ErrorMessage = string.Concat(ErrorMessage, "Nama tidak boleh duplikat, ");
-                //}
+
 
                 if (string.IsNullOrWhiteSpace(productVM.size))
                 {
                     ErrorMessage = string.Concat(ErrorMessage, "Size tidak boleh kosong, ");
                 }
-
-                //if (string.IsNullOrWhiteSpace(productVM.Currency.Code))
-                //{
-                //    ErrorMessage = string.Concat(ErrorMessage, "Mata Uang tidak boleh kosong, ");
-                //}
+                else
+                {
+                    var size = GetSize(productVM.size);
+                    if (size == null || size.Count==0)
+                    {
+                        ErrorMessage = string.Concat(ErrorMessage, $"Size {productVM.size} belum ada di master size, ");
+                    }
+                }
+                
                 decimal domesticSale = 0;
                 if (string.IsNullOrWhiteSpace(productVM.domesticSale))
                 {
@@ -582,39 +602,24 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 var itemx = GetItem(i.code);
                 if (itemx.Count() == 0 || itemx == null)
                 {
-                    //item = new ViewModels.NewIntegrationViewModel.ItemViewModel
-                    //{
-                        //articleRealizationOrder = i.articleRealizationOrder,
-                        //_id = itemx.Id,
-                        //code = i.code,
-                        //domesticCOGS = Convert.ToDouble(i.domesticCOGS),
-                        //domesticSale = Convert.ToDouble(i.domesticSale),
-                        //name = i.name,
-                        //size = i.size,
-                        //uom = i.uom
-
-                    //},
-                    //quantity = Convert.ToDouble(i.quantity),
-                    //remark = ""
-                //});
-                ItemCoreViewModel item = new ItemCoreViewModel
-                {
-                    dataDestination = new List<ItemViewModelRead>
-                        {
-                           new ItemViewModelRead
-                           {
-                               ArticleRealizationOrder = i.articleRealizationOrder,
-                               code = i.code,
-                               name = i.name,
-                               Size = i.size,
-                               Uom = i.uom,
-                           }
-                        },
-                    DomesticCOGS = Convert.ToDouble(i.domesticCOGS),
-                    DomesticRetail = 0,
-                    DomesticSale = Convert.ToDouble(i.domesticSale),
-                    DomesticWholesale = 0,
-                };
+                    ItemCoreViewModel item = new ItemCoreViewModel
+                    {
+                        dataDestination = new List<ItemViewModelRead>
+                            {
+                               new ItemViewModelRead
+                               {
+                                   ArticleRealizationOrder = i.articleRealizationOrder,
+                                   code = i.code,
+                                   name = i.name,
+                                   Size = i.size,
+                                   Uom = i.uom,
+                               }
+                            },
+                        DomesticCOGS = Convert.ToDouble(i.domesticCOGS),
+                        DomesticRetail = 0,
+                        DomesticSale = Convert.ToDouble(i.domesticSale),
+                        DomesticWholesale = 0,
+                    };
                     string itemsUri = "items/finished-goods";
                     var httpClient = (IHttpClientService)serviceProvider.GetService(typeof(IHttpClientService));
                     var response = await httpClient.PostAsync($"{APIEndpoint.Core}{itemsUri}", new StringContent(JsonConvert.SerializeObject(item).ToString(), Encoding.UTF8, General.JsonMediaType));
