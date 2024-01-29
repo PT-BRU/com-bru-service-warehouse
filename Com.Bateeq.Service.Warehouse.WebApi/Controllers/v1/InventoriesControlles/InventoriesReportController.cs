@@ -301,11 +301,53 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
             int offset = Convert.ToInt32(Request.Headers["x-timezone-offset"]);
             identityService.Username = User.Claims.Single(p => p.Type.Equals("username")).Value;
             string accept = Request.Headers["Accept"];
-            if(storage == null) { storage = "0"; }
+            if (storage == null) { storage = "0"; }
             try
             {
-                var data = facade.GetMovementAll(storage,dateFrom, dateTo, page, size);
+                var data = facade.GetMovementAll(storage, dateFrom, dateTo, page, size);
 
+                return Ok(new
+                {
+                    apiVersion = ApiVersion,
+                    data = data.Item1,
+                    info = new { total = data.Item2 },
+                    message = General.OK_MESSAGE,
+                    statusCode = General.OK_STATUS_CODE
+                });
+            }
+            catch (Exception e)
+            {
+                Dictionary<string, object> Result =
+                    new ResultFormatter(ApiVersion, General.INTERNAL_ERROR_STATUS_CODE, e.Message)
+                    .Fail();
+                return StatusCode(General.INTERNAL_ERROR_STATUS_CODE, Result);
+            }
+        }
+        [HttpGet("get-movements-all/download")]
+        public IActionResult GetMovementsAllXls(string storage, DateTime dateFrom, DateTime dateTo)
+        {
+            try
+            {
+                byte[] xlsInBytes;
+                string filename;
+                if (storage == null) { storage = "0"; }
+
+                var xls = facade.GenerateExcelReportMovementAll(storage, dateFrom, dateTo);
+                filename = String.Format("Report Movement Stock - {0}.xlsx", dateFrom.ToString("MM-yyyy") + "-" + dateTo.ToString("MM-yyyy"));
+
+                xlsInBytes = xls.ToArray();
+                var file = File(xlsInBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);
+
+                return file;
+            }
+            catch (Exception e)
+            {
+                Dictionary<string, object> Result =
+                    new ResultFormatter(ApiVersion, General.INTERNAL_ERROR_STATUS_CODE, e.Message)
+                    .Fail();
+                return StatusCode(General.INTERNAL_ERROR_STATUS_CODE, Result);
+            }
+        }
         #endregion
 
         #region Age Inventory

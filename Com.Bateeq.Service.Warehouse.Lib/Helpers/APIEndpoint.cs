@@ -16,6 +16,8 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Helpers
         public static string Auth { get; set; }
         public static string GarmentProduction { get; set; }
         public static string POS { get; set; }
+        public static string CoreConnectionString { get; set; }
+        public static string PosConnectionString { get; set; }
     }
 
     public static class AuthCredential
