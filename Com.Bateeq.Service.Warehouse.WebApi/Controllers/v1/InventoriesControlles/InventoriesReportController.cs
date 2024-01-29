@@ -301,10 +301,10 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
             int offset = Convert.ToInt32(Request.Headers["x-timezone-offset"]);
             identityService.Username = User.Claims.Single(p => p.Type.Equals("username")).Value;
             string accept = Request.Headers["Accept"];
-            if(storage == null) { storage = "0"; }
+            if (storage == null) { storage = "0"; }
             try
             {
-                var data = facade.GetMovementAll(storage,dateFrom, dateTo, page, size);
+                var data = facade.GetMovementAll(storage, dateFrom, dateTo, page, size);
 
                 return Ok(new
                 {
@@ -333,7 +333,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
                 if (storage == null) { storage = "0"; }
 
                 var xls = facade.GenerateExcelReportMovementAll(storage, dateFrom, dateTo);
-                filename = String.Format("Report Movement Stock - {0}.xlsx", dateFrom.ToString("MM-yyyy") +"-" + dateTo.ToString("MM-yyyy"));
+                filename = String.Format("Report Movement Stock - {0}.xlsx", dateFrom.ToString("MM-yyyy") + "-" + dateTo.ToString("MM-yyyy"));
 
                 xlsInBytes = xls.ToArray();
                 var file = File(xlsInBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);

@@ -1938,117 +1938,128 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
             var Query = GetStockByPeriodQuery(storageId, _dateTo, "paging", page, size);
 
-            SqlConnection conn = new SqlConnection("Server=bru-db-server.database.windows.net,1433;Database=bru-db-warehouse;User=bru;password=Standar123.;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true");
-            conn.Open();
-            var totalQuery = "SELECT Count( ItemCode) as count FROM [InventoryMovements] a " +
-                "WHERE Lastmodifiedutc = (SELECT MAX(Lastmodifiedutc) FROM[InventoryMovements] WHERE itemcode = a.itemcode and StorageCode=a.StorageCode) " +
-                "and isdeleted = 0 and [CreatedUtc] < '" + _dateTo.Date + "' ";
-
-            if (storageId != "0")
-            {
-                totalQuery += " and StorageId= " + storageId;
-            }
-
             int TotalData = 0;
-            SqlCommand command = new SqlCommand(totalQuery, conn);
-            using (SqlDataReader reader = command.ExecuteReader())
+            string ConnString = APIEndpoint.ConnectionString;
+            using (SqlConnection conn = new SqlConnection(ConnString))
             {
-                while (reader.Read())
+                conn.Open();
+                var totalQuery = "SELECT Count( ItemCode) as count FROM [InventoryMovements] a " +
+                    "WHERE Lastmodifiedutc = (SELECT MAX(Lastmodifiedutc) FROM[InventoryMovements] WHERE itemcode = a.itemcode and StorageCode=a.StorageCode) " +
+                    "and isdeleted = 0 and [CreatedUtc] < '" + _dateTo.Date + "' ";
+
+                if (storageId != "0")
                 {
-                    TotalData = Convert.ToInt32(reader["count"]);
+                    totalQuery += " and StorageId= " + storageId;
                 }
+
+                SqlCommand command = new SqlCommand(totalQuery, conn);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        TotalData = Convert.ToInt32(reader["count"]);
+                    }
+                }
+                conn.Close();
             }
-            conn.Close();
 
             return Tuple.Create(Query.ToList(), TotalData);
         }
         public IQueryable<InventoryByPeriodReportViewModel> GetStockByPeriodQuery(string storageId, DateTime dateTo, string type, int page = 1, int size = 100)
         {
-            SqlConnection conn = new SqlConnection("Server=bru-db-server.database.windows.net,1433;Database=bru-db-warehouse;User=bru;password=Standar123.;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true");
-            conn.Open();
-
-            string query = "SELECT ItemCode, after Quantity, storagename as location, type, CONVERT(varchar, LastModifiedUtc, 111) as ReceivedDate " +
-                "FROM[InventoryMovements] a " +
-                "WHERE LastModifiedUtc = (SELECT MAX(LastModifiedUtc) FROM[InventoryMovements] WHERE itemcode = a.itemcode " +
-                "and StorageCode = a.StorageCode)  " +
-                "and isdeleted = 0 and [CreatedUtc] < '" + dateTo.Date + "'";
-
-            if (storageId != "0")
-            {
-                query += " and StorageId= " + storageId;
-            }
-
-            if (type != "xls")
-            {
-                query += " ORDER BY CreatedUtc DESC OFFSET " + page + " ROWS FETCH NEXT " + size + " ROWS ONLY ";
-            }
-            
-            SqlCommand command = new SqlCommand(query, conn);
             List<string> itemcodes = new List<string>();
             List<InventoryByPeriodReportViewModel> dataList = new List<InventoryByPeriodReportViewModel>();
             List<InventoryByPeriodReportViewModel> reportData = new List<InventoryByPeriodReportViewModel>();
-            using (SqlDataReader reader = command.ExecuteReader())
+
+            string ConnString = APIEndpoint.ConnectionString;
+            using (SqlConnection conn = new SqlConnection(ConnString))
             {
-                while (reader.Read())
+                conn.Open();
+
+                string query = "SELECT ItemCode, after Quantity, storagename as location, type, CONVERT(varchar, LastModifiedUtc, 111) as ReceivedDate " +
+                    "FROM[InventoryMovements] a " +
+                    "WHERE LastModifiedUtc = (SELECT MAX(LastModifiedUtc) FROM[InventoryMovements] WHERE itemcode = a.itemcode " +
+                    "and StorageCode = a.StorageCode)  " +
+                    "and isdeleted = 0 and [CreatedUtc] < '" + dateTo.Date + "'";
+
+                if (storageId != "0")
                 {
-                    // var date = Convert.ToDateTime(reader["Date"].ToString());
-                    InventoryByPeriodReportViewModel data = new InventoryByPeriodReportViewModel
+                    query += " and StorageId= " + storageId;
+                }
+
+                if (type != "xls")
+                {
+                    query += " ORDER BY CreatedUtc DESC OFFSET " + page + " ROWS FETCH NEXT " + size + " ROWS ONLY ";
+                }
+
+                SqlCommand command = new SqlCommand(query, conn);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
                     {
-                        Brand = "BATEEQ",
-                        ReceivedDate = reader["ReceivedDate"].ToString(),
-                        Barcode = reader["ItemCode"].ToString(),
-                        Location = reader["location"].ToString(),
-                        Quantity = Convert.ToDouble(reader["Quantity"]),
-                        //Date= reader["date"].ToString()
-                    };
-                    dataList.Add(data);
-                    if (itemcodes.Count == 0)
-                    {
-                        itemcodes.Add(("'" + data.Barcode + "'"));
-                    }
-                    else
-                    {
-                        if(!itemcodes.Contains(("'" + data.Barcode + "'")))
+                        // var date = Convert.ToDateTime(reader["Date"].ToString());
+                        InventoryByPeriodReportViewModel data = new InventoryByPeriodReportViewModel
+                        {
+                            Brand = "BATEEQ",
+                            ReceivedDate = reader["ReceivedDate"].ToString(),
+                            Barcode = reader["ItemCode"].ToString(),
+                            Location = reader["location"].ToString(),
+                            Quantity = Convert.ToDouble(reader["Quantity"]),
+                            //Date= reader["date"].ToString()
+                        };
+                        dataList.Add(data);
+                        if (itemcodes.Count == 0)
                         {
                             itemcodes.Add(("'" + data.Barcode + "'"));
                         }
+                        else
+                        {
+                            if (!itemcodes.Contains(("'" + data.Barcode + "'")))
+                            {
+                                itemcodes.Add(("'" + data.Barcode + "'"));
+                            }
+                        }
                     }
                 }
+
+                conn.Close();
             }
-
-            conn.Close();
-            var itemcode = "(" + string.Join(",", itemcodes) + ")";
-            SqlConnection connCore = new SqlConnection("Server=bru-db-server.database.windows.net,1433;Database=bru-db-core;User=bru;password=Standar123.;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true");
-
-            string itemQuery = "SELECT Code, ArticleRealizationOrder, CategoryDocName, CollectionDocName,  Name, ColorDocName, " +
-                "CounterDocName, DomesticSale, DomesticCOGS, DomesticRetail, SeasonDocName, Size, StyleDocName, " +
-                "MaterialDocName FROM Items WHERE _IsDeleted = 0 and Code in " + itemcode;
-
-            connCore.Open();
-            SqlCommand commandCore = new SqlCommand(itemQuery, connCore);
             List<InventoryByPeriodReportViewModel> dataItem = new List<InventoryByPeriodReportViewModel>();
-            using (SqlDataReader reader = commandCore.ExecuteReader())
+            var itemcode = "(" + string.Join(",", itemcodes) + ")";
+            string coreConnString = APIEndpoint.CoreConnectionString;
+            using (SqlConnection connCore = new SqlConnection(coreConnString))
             {
-                while (reader.Read())
+                string itemQuery = "SELECT Code, ArticleRealizationOrder, CategoryDocName, CollectionDocName,  Name, ColorDocName, " +
+                    "CounterDocName, DomesticSale, DomesticCOGS, DomesticRetail, SeasonDocName, Size, StyleDocName, " +
+                    "MaterialDocName FROM Items WHERE _IsDeleted = 0";
+                if (itemcodes.Count > 0)
                 {
-                    InventoryByPeriodReportViewModel item = new InventoryByPeriodReportViewModel
-                    {
-                        Barcode = reader["Code"].ToString(),
-                        ItemName = reader["Name"].ToString(),
-                        ItemArticleRealizationOrder = reader["ArticleRealizationOrder"].ToString(),
-                        Size = reader["Size"].ToString(),
-                        SeasonCode = reader["SeasonDocName"].ToString(),
-                        Category = reader["CategoryDocName"].ToString(),
-                        OriginalCost = Convert.ToDouble(reader["DomesticCOGS"]),
-                        Gross = Convert.ToDouble(reader["DomesticSale"]),
-                        Collection = reader["CollectionDocName"].ToString(),
-                        Color = reader["ColorDocName"].ToString(),
-                    };
-                    dataItem.Add(item);
+                    itemQuery += "  and Code in " + itemcode;
                 }
+                connCore.Open();
+                SqlCommand commandCore = new SqlCommand(itemQuery, connCore);
+                using (SqlDataReader reader = commandCore.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        InventoryByPeriodReportViewModel item = new InventoryByPeriodReportViewModel
+                        {
+                            Barcode = reader["Code"].ToString(),
+                            ItemName = reader["Name"].ToString(),
+                            ItemArticleRealizationOrder = reader["ArticleRealizationOrder"].ToString(),
+                            Size = reader["Size"].ToString(),
+                            SeasonCode = reader["SeasonDocName"].ToString(),
+                            Category = reader["CategoryDocName"].ToString(),
+                            OriginalCost = Convert.ToDouble(reader["DomesticCOGS"]),
+                            Gross = Convert.ToDouble(reader["DomesticSale"]),
+                            Collection = reader["CollectionDocName"].ToString(),
+                            Color = reader["ColorDocName"].ToString(),
+                        };
+                        dataItem.Add(item);
+                    }
+                }
+                connCore.Close();
             }
-            connCore.Close();
-
             reportData = (from a in dataList
                           join b in dataItem on a.Barcode equals b.Barcode
                           select new InventoryByPeriodReportViewModel
