@@ -28,4 +28,9 @@ namespace Com.Bateeq.Service.Warehouse.Lib.ViewModels.InventoryViewModel
         public double TotalOriCost { get; set; }
         public double TotalGross { get; set; }
     }
+
+    public class codeViewModel
+    {
+        public string code { get; set; }
+    }
 }
