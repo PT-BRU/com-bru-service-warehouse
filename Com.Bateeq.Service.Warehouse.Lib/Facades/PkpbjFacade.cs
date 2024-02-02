@@ -23,6 +23,7 @@ using Com.Bateeq.Service.Warehouse.Lib.Interfaces.PkbjInterfaces;
 using Microsoft.Extensions.Primitives;
 using System.IO;
 using System.Data;
+using System.Text.RegularExpressions;
 
 namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 {
@@ -392,9 +393,12 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         private List<SizeViewModel> GetSize(string code)
         {
             string itemUri = "master/sizes/sizename";
+            string queryUri = "?code=" + code;
+            string uri = itemUri + queryUri;
+
             IHttpClientService httpClient = (IHttpClientService)serviceProvider.GetService(typeof(IHttpClientService));
 
-            var response = httpClient.GetAsync($"{APIEndpoint.Core}{itemUri}/{code}").Result;
+            var response = httpClient.GetAsync($"{APIEndpoint.Core}{uri}").Result;
             if (response.IsSuccessStatusCode)
             {
                 var content = response.Content.ReadAsStringAsync().Result;
@@ -454,7 +458,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 }
                 else
                 {
-                    var size = GetSize(productVM.size);
+                    var size = GetSize(Regex.Replace(productVM.size, @"\s", ""));
                     if (size == null || size.Count==0)
                     {
                         ErrorMessage = string.Concat(ErrorMessage, $"Size {productVM.size} belum ada di master size, ");
