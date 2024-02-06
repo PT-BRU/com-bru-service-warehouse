@@ -1926,6 +1926,8 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                             Gross = Convert.ToDouble(reader["DomesticSale"]),
                             Collection = reader["CollectionDocName"].ToString(),
                             Color = reader["ColorDocName"].ToString(),
+                            Style = reader["StyleDocName"].ToString(),
+                            Group = reader["CounterDocName"].ToString(),
                         };
                         dataItem.Add(item);
                     }
@@ -1954,7 +1956,9 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                               TotalOriCost = a.Quantity * b.OriginalCost,
                               TotalGross = a.TotalGross * a.Quantity,
                               Year = a.ReceivedDate.Substring(2, 2) ,
-                              Month= a.ReceivedDate.Substring(5, 2) ,
+                              Month= a.ReceivedDate.Substring(5, 2),
+                              Style = b.Style,
+                              Group = b.Group,
                           }).ToList();
 
             return reportData.AsQueryable().OrderBy(a => a.ReceivedDate).ThenBy(a => a.Barcode);
@@ -1980,6 +1984,8 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             result.Columns.Add(new DataColumn() { ColumnName = "Nama", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Color", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Size", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Style", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Group", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Qty", DataType = typeof(double) });
             result.Columns.Add(new DataColumn() { ColumnName = "Received Date", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Month", DataType = typeof(String) });
@@ -2000,7 +2006,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
             string storage = "";
             if (Query.ToArray().Count() == 0)
-                result.Rows.Add("", "", "", "", "", "", "", "", "", "", "", 0, "", "", "", "", "", 0, "", "", "", 0, "", 0, "", "");
+                result.Rows.Add("", "", "", "", "", "", "", "", "", "", "", "", "", 0, "", "", "", "", "", 0, "", "", "", 0, "", 0, "", "");
             // to allow column name to be generated properly for empty data as template
             else
             {
@@ -2011,7 +2017,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                         storage = item.Location;
                     }
                     result.Rows.Add(item.Brand, item.Brand, item.Barcode, item.Category, item.Collection,item.SeasonCode, item.SeasonYear,
-                        item.ItemArticleRealizationOrder, item.ItemName, item.Color, item.Size, item.Quantity, item.ReceivedDate,
+                        item.ItemArticleRealizationOrder, item.ItemName, item.Color, item.Size, item.Style, item.Group, item.Quantity, item.ReceivedDate,
                         item.Month, item.Year,"" , item.Location, item.OriginalCost, "", item.Gross, "", "","", item.TotalOriCost,
                         "", item.TotalGross, "", "");
                 }
