@@ -301,10 +301,10 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
             int offset = Convert.ToInt32(Request.Headers["x-timezone-offset"]);
             identityService.Username = User.Claims.Single(p => p.Type.Equals("username")).Value;
             string accept = Request.Headers["Accept"];
-            if(storage == null) { storage = "0"; }
+            if (storage == null) { storage = "0"; }
             try
             {
-                var data = facade.GetMovementAll(storage,dateFrom, dateTo, page, size);
+                var data = facade.GetMovementAll(storage, dateFrom, dateTo, page, size);
 
                 return Ok(new
                 {
@@ -333,7 +333,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
                 if (storage == null) { storage = "0"; }
 
                 var xls = facade.GenerateExcelReportMovementAll(storage, dateFrom, dateTo);
-                filename = String.Format("Report Movement Stock - {0}.xlsx", dateFrom.ToString("MM-yyyy") +"-" + dateTo.ToString("MM-yyyy"));
+                filename = String.Format("Report Movement Stock - {0}.xlsx", dateFrom.ToString("MM-yyyy") + "-" + dateTo.ToString("MM-yyyy"));
 
                 xlsInBytes = xls.ToArray();
                 var file = File(xlsInBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);
@@ -629,7 +629,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
 
         #region getStockByPeriode All
         [HttpGet("get-stock-by-period")]
-        public IActionResult GetStockByPeriod(string storage, DateTime dateTo, string info, int page = 1, int size = 100, string Order = "{}")
+        public IActionResult GetStockByPeriod(string storage, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes, string info, int page = 1, int size = 100, string Order = "{}")
         {
             int offset = Convert.ToInt32(Request.Headers["x-timezone-offset"]);
             identityService.Username = User.Claims.Single(p => p.Type.Equals("username")).Value;
@@ -637,7 +637,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
             if (storage == null) { storage = "0"; }
             try
             {
-                var data = facade.GetStockByPeriod(storage, dateTo, page, size);
+                var data = facade.GetStockByPeriod(storage, dateTo, group, category, style, collection, season, color, sizes, page, size);
 
                 return Ok(new
                 {
@@ -658,7 +658,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
         }
 
         [HttpGet("get-stock-by-period/download")]
-        public IActionResult GetStockByPeriodXls(string storage, DateTime dateTo)
+        public IActionResult GetStockByPeriodXls(string storage, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes)
         {
             try
             {
@@ -666,7 +666,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
                 string filename;
                 if (storage == null) { storage = "0"; }
 
-                var xls = facade.GetXLSStockByPeriod(storage, dateTo);
+                var xls = facade.GetXLSStockByPeriod(storage, dateTo, group, category, style, collection, season, color, sizes);
                 filename = String.Format("Laporan Stock.xlsx");
 
                 xlsInBytes = xls.ToArray();
