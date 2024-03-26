@@ -629,7 +629,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
 
         #region getStockByPeriode All
         [HttpGet("get-stock-by-period")]
-        public IActionResult GetStockByPeriod(string storage, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes, string info, int page = 1, int size = 100, string Order = "{}")
+        public IActionResult GetStockByPeriod(string storage, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes, string info, int page = 1, int size = 100, string Order = "{}")
         {
             int offset = Convert.ToInt32(Request.Headers["x-timezone-offset"]);
             identityService.Username = User.Claims.Single(p => p.Type.Equals("username")).Value;
@@ -637,7 +637,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
             if (storage == null) { storage = "0"; }
             try
             {
-                var data = facade.GetStockByPeriod(storage, dateTo, group, category, style, collection, season, color, sizes, page, size);
+                var data = facade.GetStockByPeriod(storage, dateFrom, dateTo, group, category, style, collection, season, color, sizes, page, size);
 
                 return Ok(new
                 {
@@ -658,7 +658,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
         }
 
         [HttpGet("get-stock-by-period/download")]
-        public IActionResult GetStockByPeriodXls(string storage, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes)
+        public IActionResult GetStockByPeriodXls(string storage, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes)
         {
             try
             {
@@ -666,7 +666,7 @@ namespace Com.MM.Service.Warehouse.WebApi.Controllers.v1.InventoryControllers
                 string filename;
                 if (storage == null) { storage = "0"; }
 
-                var xls = facade.GetXLSStockByPeriod(storage, dateTo, group, category, style, collection, season, color, sizes);
+                var xls = facade.GetXLSStockByPeriod(storage, dateFrom, dateTo, group, category, style, collection, season, color, sizes);
                 filename = String.Format("Laporan Stock.xlsx");
 
                 xlsInBytes = xls.ToArray();
