@@ -1706,7 +1706,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
         #region GetStockByPeriod
 
-        public List<string> GetItemCodesQuery(string storageId, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes)
+        public List<string> GetItemCodesQuery(string storageId, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes)
         {
             string ConnString = APIEndpoint.ConnectionString;
             List<string> itemcodes = new List<string>();
@@ -1716,7 +1716,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 conn.Open();
                 var totalQuery = "SELECT ItemCode FROM [InventoryMovements] a " +
                     "WHERE Lastmodifiedutc = (SELECT MAX(Lastmodifiedutc) FROM[InventoryMovements] WHERE itemcode = a.itemcode and StorageCode=a.StorageCode) " +
-                    "and isdeleted = 0 and [CreatedUtc] < '" + dateTo.Date + "' ";
+                    "and isdeleted = 0 and [CreatedUtc] < '" + dateTo.Date + "' and [CreatedUtc] >= '" + dateFrom.Date + "' ";
 
                 if (storageId != "0")
                 {
@@ -1809,10 +1809,11 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         }
 
         
-        public Tuple<List<InventoryByPeriodReportViewModel>, int> GetStockByPeriod(string storageId, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes, int page = 1, int size = 100)
+        public Tuple<List<InventoryByPeriodReportViewModel>, int> GetStockByPeriod(string storageId, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes, int page = 1, int size = 100)
         {
             DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
-            var codes = GetItemCodesQuery(storageId, _dateTo, group, category, style, collection, season, color, sizes);
+            DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? DateTime.MinValue : dateFrom;
+            var codes = GetItemCodesQuery(storageId, _dateFrom, _dateTo, group, category, style, collection, season, color, sizes);
             if (codes.Count == 0)
             {
                 codes.Add("null");
@@ -1965,27 +1966,28 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
         }
 
-        public MemoryStream GetXLSStockByPeriod(string storageId, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes)
+        public MemoryStream GetXLSStockByPeriod(string storageId, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes)
         {
             DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
-            var codes = GetItemCodesQuery(storageId, _dateTo, group, category, style, collection, season, color, sizes);
+            DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? DateTime.MinValue : dateFrom;
+            var codes = GetItemCodesQuery(storageId, _dateFrom, _dateTo, group, category, style, collection, season, color, sizes);
             var Query = GetStockByPeriodQuery(storageId,"xls", codes);
 
             DataTable result = new DataTable();
 
             result.Columns.Add(new DataColumn() { ColumnName = "Org", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Brand", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "RO/Article", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Barcode", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Nama", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Size", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Color", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Group", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Category", DataType = typeof(String) });
+            result.Columns.Add(new DataColumn() { ColumnName = "Style", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Collection", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Season Code", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Season Year", DataType = typeof(String) });
-            result.Columns.Add(new DataColumn() { ColumnName = "RO/Article", DataType = typeof(String) });
-            result.Columns.Add(new DataColumn() { ColumnName = "Nama", DataType = typeof(String) });
-            result.Columns.Add(new DataColumn() { ColumnName = "Color", DataType = typeof(String) });
-            result.Columns.Add(new DataColumn() { ColumnName = "Size", DataType = typeof(String) });
-            result.Columns.Add(new DataColumn() { ColumnName = "Style", DataType = typeof(String) });
-            result.Columns.Add(new DataColumn() { ColumnName = "Group", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Qty", DataType = typeof(double) });
             result.Columns.Add(new DataColumn() { ColumnName = "Received Date", DataType = typeof(String) });
             result.Columns.Add(new DataColumn() { ColumnName = "Month", DataType = typeof(String) });
@@ -2016,10 +2018,10 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                     {
                         storage = item.Location;
                     }
-                    result.Rows.Add(item.Brand, item.Brand, item.Barcode, item.Category, item.Collection,item.SeasonCode, item.SeasonYear,
-                        item.ItemArticleRealizationOrder, item.ItemName, item.Color, item.Size, item.Style, item.Group, item.Quantity, item.ReceivedDate,
-                        item.Month, item.Year,"" , item.Location, item.OriginalCost, "", item.Gross, "", "","", item.TotalOriCost,
-                        "", item.TotalGross, "", "");
+                    result.Rows.Add(item.Brand, item.Brand, item.ItemArticleRealizationOrder, item.Barcode, item.ItemName, item.Size, item.Color,
+                        item.Group, item.Category, item.Style, item.Collection,item.SeasonCode, item.SeasonYear, item.Quantity, 
+                        item.ReceivedDate, item.Month, item.Year,"" , item.Location, item.OriginalCost, "", item.Gross, "", "", "", 
+                        item.TotalOriCost, "", item.TotalGross, "", "");
                 }
 
             }
