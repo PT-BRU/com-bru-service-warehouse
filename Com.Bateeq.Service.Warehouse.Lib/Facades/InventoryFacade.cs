@@ -1716,7 +1716,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 conn.Open();
                 var totalQuery = "SELECT ItemCode FROM [InventoryMovements] a " +
                     "WHERE Lastmodifiedutc = (SELECT MAX(Lastmodifiedutc) FROM[InventoryMovements] WHERE itemcode = a.itemcode and StorageCode=a.StorageCode) " +
-                    "and isdeleted = 0 and [CreatedUtc] < '" + dateTo.Date + "' and [CreatedUtc] >= '" + dateFrom.Date + "' ";
+                    "and isdeleted = 0 and [CreatedUtc] < '" + dateFrom.Date + "' ";
 
                 if (storageId != "0")
                 {
@@ -1779,14 +1779,14 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 {
                     itemQuery += " and [ArticleSeasonsId]= " + season;
                 }
-                if (!string.IsNullOrEmpty(color))
-                {
-                    itemQuery += " and [ArticleColorsId]= " + color;
-                }
-                if (!string.IsNullOrEmpty(sizes))
-                {
-                    itemQuery += " and [Size]= '" + sizes + "'";
-                }
+                //if (!string.IsNullOrEmpty(color))
+                //{
+                //    itemQuery += " and [ArticleColorsId]= " + color;
+                //}
+                //if (!string.IsNullOrEmpty(sizes))
+                //{
+                //    itemQuery += " and [Size]= '" + sizes + "'";
+                //}
                 connCore.Open();
                 SqlCommand commandCore = new SqlCommand(itemQuery, connCore);
                 using (SqlDataReader reader = commandCore.ExecuteReader())
