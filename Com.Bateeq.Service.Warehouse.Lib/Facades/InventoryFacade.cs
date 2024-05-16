@@ -1716,7 +1716,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 conn.Open();
                 var totalQuery = "SELECT ItemCode FROM [InventoryMovements] a " +
                     "WHERE Lastmodifiedutc = (SELECT MAX(Lastmodifiedutc) FROM[InventoryMovements] WHERE itemcode = a.itemcode and StorageCode=a.StorageCode) " +
-                    "and isdeleted = 0 and [CreatedUtc] < '" + dateFrom.Date + "' ";
+                    "and isdeleted = 0 and [CreatedUtc] < '" + dateTo.Date + "' ";
 
                 if (storageId != "0")
                 {
