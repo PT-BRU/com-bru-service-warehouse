@@ -1810,7 +1810,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         }
 
         
-        public Tuple<List<InventoryByPeriodReportViewModel>, int> GetStockByPeriod(string storageId, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes, int page = 1, int size = 100)
+        public Tuple<List<InventoryByPeriodReportViewModel>, int> GetStockByPeriod(string storageId, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes, string zero, int page = 1, int size = 100)
         {
             DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
             DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? DateTime.MinValue : dateFrom;
@@ -1821,11 +1821,11 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
             }
             Pageable<string> pageable = new Pageable<string>(codes, page - 1, size);
             List<string> Data = pageable.Data.ToList<string>();
-            var Query = GetStockByPeriodQuery(storageId,"paging", Data, page, size);
+            var Query = GetStockByPeriodQuery(storageId,"paging", Data, zero, page, size);
 
             return Tuple.Create(Query.ToList(), codes.Count);
         }
-        public IQueryable<InventoryByPeriodReportViewModel> GetStockByPeriodQuery(string storageId, string type, List<string> codes, int page = 1, int size = 100)
+        public IQueryable<InventoryByPeriodReportViewModel> GetStockByPeriodQuery(string storageId, string type, List<string> codes, string zero, int page = 1, int size = 100)
         {
             List<string> itemcodes = new List<string>();
             List<InventoryByPeriodReportViewModel> dataList = new List<InventoryByPeriodReportViewModel>();
@@ -1868,6 +1868,14 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 if (storageId != "0")
                 {
                     query += " and StorageId= " + storageId;
+                }
+                if (zero == "0")
+                {
+                    query += " and after=0 " ;
+                }
+                else if(zero == ">0")
+                {
+                    query += " and after>0 ";
                 }
 
                 //if (type != "xls")
@@ -1967,12 +1975,12 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
         }
 
-        public MemoryStream GetXLSStockByPeriod(string storageId, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes)
+        public MemoryStream GetXLSStockByPeriod(string storageId, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes, string zero)
         {
             DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
             DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? DateTime.MinValue : dateFrom;
             var codes = GetItemCodesQuery(storageId, _dateFrom, _dateTo, group, category, style, collection, season, color, sizes);
-            var Query = GetStockByPeriodQuery(storageId,"xls", codes);
+            var Query = GetStockByPeriodQuery(storageId,"xls", codes, zero);
 
             DataTable result = new DataTable();
 
