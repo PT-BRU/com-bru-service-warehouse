@@ -1717,20 +1717,20 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 conn.Open();
                 var totalQuery = "SELECT ItemCode FROM [InventoryMovements] a " +
                     "WHERE Lastmodifiedutc = (SELECT MAX(Lastmodifiedutc) FROM[InventoryMovements] WHERE itemcode = a.itemcode and StorageCode=a.StorageCode) " +
-                    "and isdeleted = 0 and [CreatedUtc] < '" + dateTo.Date + "' and [CreatedUtc] >= '" + dateFrom.Date + "' ";
+                    "and isdeleted = 0 and after>0 and [CreatedUtc] < '" + dateTo.Date + "' ";
 
                 if (storageId != "0")
                 {
                     totalQuery += " and StorageId= " + storageId;
                 }
-                if (zero == "0")
-                {
-                    totalQuery += " and after=0 ";
-                }
-                else if (zero == ">0")
-                {
-                    totalQuery += " and after>0 ";
-                }
+                //if (zero == "0")
+                //{
+                //    totalQuery += " and after=0 ";
+                //}
+                //else if (zero == ">0")
+                //{
+                //    totalQuery += " and after>0 ";
+                //}
 
                 SqlCommand command = new SqlCommand(totalQuery, conn);
                 using (SqlDataReader reader = command.ExecuteReader())
@@ -1866,7 +1866,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 string query = "SELECT ItemCode, after Quantity, storagename as location, type, CONVERT(varchar, LastModifiedUtc, 111) as ReceivedDate " +
                     "FROM[InventoryMovements] a " +
                     "WHERE LastModifiedUtc = (SELECT MAX(LastModifiedUtc) FROM[InventoryMovements] WHERE itemcode = a.itemcode " +
-                    "and StorageCode = a.StorageCode)  " +
+                    "and StorageCode = a.StorageCode) and after>0 " +
                     "and isdeleted = 0 ";
 
                 if (itemcodes.Count > 0)
@@ -1877,14 +1877,14 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 {
                     query += " and StorageId= " + storageId;
                 }
-                if (zero == "0")
-                {
-                    query += " and after=0 " ;
-                }
-                else if(zero == ">0")
-                {
-                    query += " and after>0 ";
-                }
+                //if (zero == "0")
+                //{
+                //    query += " and after=0 " ;
+                //}
+                //else if(zero == ">0")
+                //{
+                //    query += " and after>0 ";
+                //}
 
                 //if (type != "xls")
                 //{
