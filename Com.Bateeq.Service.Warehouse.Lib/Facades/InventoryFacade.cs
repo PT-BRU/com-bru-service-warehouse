@@ -1707,7 +1707,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
         #region GetStockByPeriod
 
-        public List<string> GetItemCodesQuery(string storageId, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes)
+        public List<string> GetItemCodesQuery(string storageId, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes, string zero)
         {
             string ConnString = APIEndpoint.ConnectionString;
             List<string> itemcodes = new List<string>();
@@ -1717,12 +1717,20 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 conn.Open();
                 var totalQuery = "SELECT ItemCode FROM [InventoryMovements] a " +
                     "WHERE Lastmodifiedutc = (SELECT MAX(Lastmodifiedutc) FROM[InventoryMovements] WHERE itemcode = a.itemcode and StorageCode=a.StorageCode) " +
-                    "and isdeleted = 0 and [CreatedUtc] < '" + dateTo.Date + "' and [CreatedUtc] >= '" + dateFrom.Date + "' ";
+                    "and isdeleted = 0 and after>0 and [CreatedUtc] < '" + dateTo.Date + "' ";
 
                 if (storageId != "0")
                 {
                     totalQuery += " and StorageId= " + storageId;
                 }
+                //if (zero == "0")
+                //{
+                //    totalQuery += " and after=0 ";
+                //}
+                //else if (zero == ">0")
+                //{
+                //    totalQuery += " and after>0 ";
+                //}
 
                 SqlCommand command = new SqlCommand(totalQuery, conn);
                 using (SqlDataReader reader = command.ExecuteReader())
@@ -1814,7 +1822,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         {
             DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
             DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? DateTime.MinValue : dateFrom;
-            var codes = GetItemCodesQuery(storageId, _dateFrom, _dateTo, group, category, style, collection, season, color, sizes);
+            var codes = GetItemCodesQuery(storageId, _dateFrom, _dateTo, group, category, style, collection, season, color, sizes, zero);
             if (codes.Count == 0)
             {
                 codes.Add("null");
@@ -1858,7 +1866,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 string query = "SELECT ItemCode, after Quantity, storagename as location, type, CONVERT(varchar, LastModifiedUtc, 111) as ReceivedDate " +
                     "FROM[InventoryMovements] a " +
                     "WHERE LastModifiedUtc = (SELECT MAX(LastModifiedUtc) FROM[InventoryMovements] WHERE itemcode = a.itemcode " +
-                    "and StorageCode = a.StorageCode)  " +
+                    "and StorageCode = a.StorageCode) and after>0 " +
                     "and isdeleted = 0 ";
 
                 if (itemcodes.Count > 0)
@@ -1869,14 +1877,14 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 {
                     query += " and StorageId= " + storageId;
                 }
-                if (zero == "0")
-                {
-                    query += " and after=0 " ;
-                }
-                else if(zero == ">0")
-                {
-                    query += " and after>0 ";
-                }
+                //if (zero == "0")
+                //{
+                //    query += " and after=0 " ;
+                //}
+                //else if(zero == ">0")
+                //{
+                //    query += " and after>0 ";
+                //}
 
                 //if (type != "xls")
                 //{
@@ -1979,7 +1987,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         {
             DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
             DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? DateTime.MinValue : dateFrom;
-            var codes = GetItemCodesQuery(storageId, _dateFrom, _dateTo, group, category, style, collection, season, color, sizes);
+            var codes = GetItemCodesQuery(storageId, _dateFrom, _dateTo, group, category, style, collection, season, color, sizes, zero);
             var Query = GetStockByPeriodQuery(storageId,"xls", codes, zero);
 
             DataTable result = new DataTable();
