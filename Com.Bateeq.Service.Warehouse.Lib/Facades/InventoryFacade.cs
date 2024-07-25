@@ -1707,7 +1707,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
 
         #region GetStockByPeriod
 
-        public List<string> GetItemCodesQuery(string storageId, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes)
+        public List<string> GetItemCodesQuery(string storageId, DateTime dateFrom, DateTime dateTo, string group, string category, string style, string collection, string season, string color, string sizes, string zero)
         {
             string ConnString = APIEndpoint.ConnectionString;
             List<string> itemcodes = new List<string>();
@@ -1722,6 +1722,14 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
                 if (storageId != "0")
                 {
                     totalQuery += " and StorageId= " + storageId;
+                }
+                if (zero == "0")
+                {
+                    totalQuery += " and after=0 ";
+                }
+                else if (zero == ">0")
+                {
+                    totalQuery += " and after>0 ";
                 }
 
                 SqlCommand command = new SqlCommand(totalQuery, conn);
@@ -1814,7 +1822,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         {
             DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
             DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? DateTime.MinValue : dateFrom;
-            var codes = GetItemCodesQuery(storageId, _dateFrom, _dateTo, group, category, style, collection, season, color, sizes);
+            var codes = GetItemCodesQuery(storageId, _dateFrom, _dateTo, group, category, style, collection, season, color, sizes, zero);
             if (codes.Count == 0)
             {
                 codes.Add("null");
@@ -1979,7 +1987,7 @@ namespace Com.Bateeq.Service.Warehouse.Lib.Facades
         {
             DateTime _dateTo = dateTo == new DateTime(0001, 1, 1) ? DateTime.Now : dateTo;
             DateTime _dateFrom = dateFrom == new DateTime(0001, 1, 1) ? DateTime.MinValue : dateFrom;
-            var codes = GetItemCodesQuery(storageId, _dateFrom, _dateTo, group, category, style, collection, season, color, sizes);
+            var codes = GetItemCodesQuery(storageId, _dateFrom, _dateTo, group, category, style, collection, season, color, sizes, zero);
             var Query = GetStockByPeriodQuery(storageId,"xls", codes, zero);
 
             DataTable result = new DataTable();
